@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk.Web">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <VersionPrefix>0.0.17</VersionPrefix>
+        <Description>Kanject service adapter library</Description>
+        <Authors>Akinsanya Omogbolahan</Authors>
+        <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+        <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+        <AWSProjectType>Lambda</AWSProjectType>
+        <!-- This property makes the build directory similar to a publish directory and helps the AWS .NET Lambda Mock Test Tool find project dependencies. -->
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <!-- Generate ready to run images during publishing to improve cold start time. -->
+        <PublishReadyToRun>true</PublishReadyToRun>
+        <!-- Use Workstation GC - generally better for Lambda -->
+        <ServerGarbageCollection>false</ServerGarbageCollection>
+        <!-- Excludes .pdb files from published lambda functions during code build phase -->
+        <StripSymbols>true</StripSymbols>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+        <WarningLevel>4</WarningLevel>
+        <DocumentationFile>bin\Debug\net6.0\Trifted.Points.Api.xml</DocumentationFile>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.0"/>
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.1.0"/>
+        <PackageReference Include="Amazon.Lambda.AspNetCoreServer" Version="9.2.1"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Content Update="Properties\launchSettings.json">
+            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+        </Content>
+        <Content Condition="'$(ExcludeConfigFilesFromBuildOutput)'!='true'" Update="template.stage.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Condition="'$(ExcludeConfigFilesFromBuildOutput)'!='true'" Update="template.prod.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Condition="'$(ExcludeConfigFilesFromBuildOutput)'!='true'" Update="template.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Condition="'$(ExcludeConfigFilesFromBuildOutput)'!='true'" Update="appsettings.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Condition="'$(ExcludeConfigFilesFromBuildOutput)'!='true'" Update="appsettings.Production.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Condition="'$(ExcludeConfigFilesFromBuildOutput)'!='true'" Update="appsettings.Staging.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\Trifted.Points.Business\Trifted.Points.Business.csproj" />
+      <ProjectReference Include="..\Trifted.Points.Common\Trifted.Points.Common.csproj" />
+    </ItemGroup>
+</Project>

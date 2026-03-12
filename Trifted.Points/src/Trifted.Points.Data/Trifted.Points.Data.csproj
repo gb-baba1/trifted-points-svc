@@ -4,8 +4,10 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+        <DynamoDbSchemaOutputDir>Docs</DynamoDbSchemaOutputDir>
     </PropertyGroup>
     <ItemGroup>
-      <ProjectReference Include="..\..\..\trifted-core\Trifted.Core\Trifted.Core.csproj" />
+      <ProjectReference Include="..\Trifted.Points.Common\Trifted.Points.Common.csproj" />
     </ItemGroup>
 </Project>

@@ -1,12 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trifted.Points.Business", "src\Trifted.Points.Business\Trifted.Points.Business.csproj", "{ABFA2238-D184-4762-B259-8121D49B4194}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trifted.Points.Business", "Trifted.Points\src\Trifted.Points.Business\Trifted.Points.Business.csproj", "{ABFA2238-D184-4762-B259-8121D49B4194}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trifted.Points.Api", "src\Trifted.Points.Api\Trifted.Points.Api.csproj", "{514AFF51-0D8E-4232-B21F-FFE66982C818}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trifted.Points.Api", "Trifted.Points\src\Trifted.Points.Api\Trifted.Points.Api.csproj", "{514AFF51-0D8E-4232-B21F-FFE66982C818}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trifted.Points.Data", "src\Trifted.Points.Data\Trifted.Points.Data.csproj", "{4B3E9FAA-EC9A-43A2-8E68-2411652AE765}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trifted.Points.Data", "Trifted.Points\src\Trifted.Points.Data\Trifted.Points.Data.csproj", "{4B3E9FAA-EC9A-43A2-8E68-2411652AE765}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trifted.Points.Common", "src\Trifted.Points.Common\Trifted.Points.Common.csproj", "{1CAC5F34-0022-4F35-A07B-DD35AC250C55}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trifted.Points.Common", "Trifted.Points\src\Trifted.Points.Common\Trifted.Points.Common.csproj", "{1CAC5F34-0022-4F35-A07B-DD35AC250C55}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trifted.Core", "..\trifted-core\Trifted.Core\Trifted.Core.csproj", "{7DEE2B56-6694-42C1-8A7A-23D68FA3C6C6}"
 EndProject

@@ -11,16 +11,6 @@
       "Properties": {
         "MemorySize": 1024,
         "Timeout": 30,
-        "Architectures": [
-          "arm64"
-        ],
-        "Environment": {
-          "Variables": {
-            "ASPNETCORE_ENVIRONMENT": "Production",
-            "ASPNETCORE_LAMBDA_ENVIRONMENT": "Staging",
-            "SECRET_PARAMETER_PATHNAME": "/staging"
-          }
-        },
         "Policies": [
           "[insert IAM multiple policies seperated with commas (",
           ")]"
@@ -42,16 +32,6 @@
       "Properties": {
         "MemorySize": 1024,
         "Timeout": 30,
-        "Architectures": [
-          "arm64"
-        ],
-        "Environment": {
-          "Variables": {
-            "ASPNETCORE_ENVIRONMENT": "Production",
-            "ASPNETCORE_LAMBDA_ENVIRONMENT": "Staging",
-            "SECRET_PARAMETER_PATHNAME": "/Staging"
-          }
-        },
         "Policies": [
           "[insert IAM multiple policies seperated with commas (",
           ")]"

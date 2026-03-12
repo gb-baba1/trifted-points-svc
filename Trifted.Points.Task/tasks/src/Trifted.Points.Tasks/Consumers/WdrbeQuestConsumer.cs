@@ -1,11 +1,10 @@
-using System.Text.Json;
 using Amazon.Lambda.SQSEvents;
 using Amazon.SQS.Model;
 using Kanject.Core.Api.Abstractions.Exceptions;
 using Kanject.Core.Queue.Provider.AwsSqs.Annotations.Attributes;
+using System.Text.Json;
+using Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Interfaces;
 using Trifted.Points.Data;
-using Trifted.Points.Data.Entities.Users;
-using Trifted.Points.Data.Entities.WdrbeQuest;
 using Trifted.Points.Data.Repositories;
 using static Trifted.Points.Data.Repositories.WdrbeQuestRepositoryItemCollectionType;
 
@@ -14,6 +13,7 @@ namespace Trifted.Points.Tasks.Consumers;
 [QueueConsumer]
 [QueueConsumerDependency(typeof(WdrbeQuestRepository))]
 [QueueConsumerDependency(typeof(UserQuestRepository))]
+[QueueConsumerDependency(typeof(IWdrbeQuestManagerService))]
 public partial class WdrbeQuestConsumer
 {
     protected override async Task ConsumeAsync(List<Message> messages)
@@ -25,7 +25,7 @@ public partial class WdrbeQuestConsumer
         var questTasksLookup = questTasks.ToLookup(task => task.EventTopic);
 
         var questLookup = (await WdrbeQuestRepository.GetItemCollectionAsync(
-                ids: [..questTasks.Select(task => task.QuestId)],
+                ids: [.. questTasks.Select(task => task.QuestId)],
                 includes:
                 [
                     WdrbeQuest,
@@ -60,7 +60,7 @@ public partial class WdrbeQuestConsumer
                         throw new ApiValidationException("Unable to parse user identifier from message body");
                     }
 
-                    var response = await ProcessUserPointAsync(userId: userId, questId: quest.Id);
+                    var response = await WdrbeQuestManagerService.ProcessUserPointAsync(userId: userId, questId: quest.QuestId, taskId: quest.Id);
 
                     response.PrintInConsole();
                 }
@@ -69,71 +69,8 @@ public partial class WdrbeQuestConsumer
             {
                 ex.PrintInConsole();
                 Response.BatchItemFailures.Add(new SQSBatchResponse.BatchItemFailure
-                    { ItemIdentifier = messageContext.MessageId });
+                { ItemIdentifier = messageContext.MessageId });
             }
         }
-    }
-
-    private async Task<WdrbeQuestEntity> ProcessUserPointAsync(Guid userId, Guid questId)
-    {
-        var quest = await WdrbeQuestRepository.FindWdrbeQuestAsync(questId)
-                    ?? throw new ApiValidationException("Quest not found");
-
-        UserQuestRepository.BeginTransaction();
-
-        var userQuest = await UserQuestRepository.FindUserQuestAsync(userId, questId);
-
-        var pointsToAward = quest.PointPerAction;
-
-        if (userQuest == null)
-        {
-            userQuest = new UserQuestEntity
-            {
-                Id = Guid.NewGuid(),
-                UserId = userId,
-                QuestId = questId,
-                Points = pointsToAward
-            };
-        }
-        else
-        {
-            var accumulatedPoints = userQuest.Points;
-
-            if (accumulatedPoints >= quest.Points)
-            {
-                ($"User with id {userId} already completed quest {questId}").PrintInConsole();
-                return quest;
-            }
-
-            if (accumulatedPoints + pointsToAward > quest.Points)
-            {
-                pointsToAward = quest.Points - accumulatedPoints;
-            }
-
-            userQuest.Points += pointsToAward;
-        }
-
-        var userPoint = await UserQuestRepository.UserPoint.FindUserPointAsync(userId);
-
-        if (userPoint == null)
-        {
-            userPoint = new UserPointEntity
-            {
-                Id = Guid.NewGuid(),
-                UserId = userId,
-                Points = pointsToAward
-            };
-        }
-        else
-        {
-            userPoint.Points += pointsToAward;
-        }
-
-        await UserQuestRepository.AddOrUpdateAsync(userQuest);
-        await UserQuestRepository.UserPoint.AddOrUpdateAsync(userPoint);
-
-        await UserQuestRepository.CommitAsync();
-
-        return quest;
     }
 }

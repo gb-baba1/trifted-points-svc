@@ -1,6 +1,9 @@
 ﻿//  Author: Omogbolahan Akinsanya a.omogbolahan@kanjectbusiness.solutions
 //  Copyright (c) 2022, Kanject 2015
 
+using Trifted.Points.Business.Services.WdrbeQuest;
+using Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Interfaces;
+
 namespace Trifted.Points.Api.Configurations;
 
 /// <summary>
@@ -15,6 +18,8 @@ public static class AppServicesManagerExtensions
     /// <returns></returns>
     public static IServiceCollection AddBusinessServices(this IServiceCollection services)
     {
+
+        services.AddScoped<IWdrbeQuestManagerService, WdrbeQuestManagerService>();
         return services;
     }
 }

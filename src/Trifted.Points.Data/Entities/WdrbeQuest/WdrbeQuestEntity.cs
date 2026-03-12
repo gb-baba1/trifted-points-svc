@@ -53,13 +53,12 @@ public record WdrbeQuestEntity : AbstractBaseEntity
     [DynamoDBProperty]
     public string Name { get; set; } = string.Empty;
 
-    [DynamoDBProperty] public int PointPerAction { get; set; }
-
-    [DynamoDBProperty] public int MaxAction { get; set; }
+    [DynamoDBProperty] public string Description { get; set; } = string.Empty;
 
     [DynamoDBProperty] public int Points { get; set; }
 
-    [DynamoDBProperty] public string UserIdentifier { get; set; } = string.Empty;
+    [DynamoDBProperty] public Badge Badge { get; set; }
+    [DynamoDBProperty] public bool IsActive{ get; set; }
 
     [DynamoDBProperty("LastUpdatedOn")] public string LastUpdatedOn { get; set; } = string.Empty;
 

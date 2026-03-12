@@ -1,13 +1,9 @@
-﻿namespace Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Models;
+﻿using Trifted.Points.Data.Enums;
 
-public class WdrbeQuestResponse
+namespace Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Models;
+
+public class WdrbeQuestResponse : GetWbdrbeQuestResponse
 {
-    /// <summary>
-    /// Gets or sets the Total Points.
-    /// This property is used to define Total Points.
-    /// </summary>
-    public int TotalPoints { get; set; }
-
     /// <summary>
     /// Gets or sets the Quest Tasks.
     /// </summary>

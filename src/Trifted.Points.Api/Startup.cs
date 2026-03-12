@@ -18,18 +18,13 @@ namespace Trifted.Points.Api;
 /// <summary>
 ///     Startup
 /// </summary>
-public class Startup
+/// <remarks>
+/// Default constructor
+/// </remarks>
+/// <param name="configuration"></param>
+public class Startup(IConfiguration configuration)
 {
-    /// <summary>
-    /// Default constructor
-    /// </summary>
-    /// <param name="configuration"></param>
-    public Startup(IConfiguration configuration)
-    {
-        Configuration = configuration;
-    }
-
-    private IConfiguration Configuration { get; }
+    private IConfiguration Configuration { get; } = configuration;
     private bool _shouldSetupQueue;
     private AppSettings? _appSettings;
 

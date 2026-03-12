@@ -3,10 +3,15 @@ namespace Trifted.Points.Data.Dtos;
 public class QuestTaskDto
 {
     /// <summary>
-    /// Gets or sets the type associated with the request.
-    /// This property is used to define or categorize the specific purpose or classification of the request.
+    /// Gets or sets the Id associated with the request.
+    /// This property is used to define or categorize the specific purpose or classification of the Id.
     /// </summary>
-    public string QuestName { get; set; } = string.Empty;
+    public string TaskId { get; set; } = string.Empty;
+    /// <summary>
+    /// Gets or sets the task associated with the request.
+    /// This property is used to define or categorize the specific purpose or classification of the task.
+    /// </summary>
+    public string TaskName { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the CountryId associated with the request.

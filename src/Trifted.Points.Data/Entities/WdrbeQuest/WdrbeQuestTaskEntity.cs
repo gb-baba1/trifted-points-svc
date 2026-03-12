@@ -51,12 +51,15 @@ public record WdrbeQuestTaskEntity : AbstractBaseEntity
     [Collection(name: "QuestEventTopic")]
     [DynamoDBProperty]
     public string EventTopic { get; set; } = string.Empty;
-
+    [DynamoDBProperty] public string Name { get; set; } = string.Empty;
     [DynamoDBProperty] public Guid QuestId { get; set; }
 
     [DynamoDBProperty] public Guid? CountryId { get; set; }
+    [DynamoDBProperty] public int PointPerAction { get; set; }
 
+    [DynamoDBProperty] public int MaxAction { get; set; }
+    [DynamoDBProperty] public int Points { get; set; }
     [DynamoDBProperty] public string UserIdentifier { get; set; } = string.Empty;
-
+    [DynamoDBProperty]  public string LastUpdatedOn { get; set; } = string.Empty;
     [DynamoDBProperty("Et")] public override EntityType EntityType { get; set; } = EntityType.WdrbeQuestTask;
 }

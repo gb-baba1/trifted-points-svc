@@ -25,9 +25,9 @@
         <DocumentationFile>.\Trifted.Points.Api.xml</DocumentationFile>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.0"/>
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.1.0"/>
-        <PackageReference Include="Amazon.Lambda.AspNetCoreServer" Version="9.2.1"/>
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.1.0" />
+        <PackageReference Include="Amazon.Lambda.AspNetCoreServer" Version="9.2.1" />
     </ItemGroup>
     <ItemGroup>
         <Content Update="Properties\launchSettings.json">
@@ -57,9 +57,6 @@
     <ItemGroup>
       <ProjectReference Include="..\Trifted.Points.Business\Trifted.Points.Business.csproj" />
       <ProjectReference Include="..\Trifted.Points.Common\Trifted.Points.Common.csproj" />
-    </ItemGroup>
-    <ItemGroup>
-      <Folder Include="Controllers\Admin\" />
     </ItemGroup>
     <ItemGroup>
       <None Update="Trifted.Points.Api.xml">

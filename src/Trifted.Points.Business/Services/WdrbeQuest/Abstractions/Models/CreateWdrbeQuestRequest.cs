@@ -1,16 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Dtos;
+using Trifted.Points.Data.Enums;
 
 namespace Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Models;
 
 public class CreateWdrbeQuestRequest
 {
-    /// <summary>
-    /// Gets or sets the unique identifier associated with the user.
-    /// This identifier is used to distinguish and authenticate the user within the system.
-    /// </summary>
-    [Required]
-    public string UserIdentifier { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the type associated with the request.
@@ -19,22 +14,15 @@ public class CreateWdrbeQuestRequest
     [Required]
     public string QuestName { get; set; } = string.Empty;
     /// <summary>
-    /// Gets or sets the point allocated to action taken on the quest.
-    /// This property is used to detatermine points valuation for each action performed on this quest.
+    /// Gets or sets the description of the quest
+    /// This property is used to define or categorize the specific purpose or classification of the request.
     /// </summary>
     [Required]
-    [Range(1, int.MaxValue, ErrorMessage = "Point Per Action must be greater than 0.")]
-    public int PointPerAction { get; set; }
-    /// <summary>
-    /// Gets or sets the maximum action required to complete this quest.
-    /// This property is used to define the count of action required to complete the quest
-    /// </summary>
-    [Required]
-    [Range(1, int.MaxValue, ErrorMessage = "Maximum Action must be greater than 0.")]
-    public int MaxAction { get; set; }
+    public string QuestDescription { get; set; } = string.Empty;
 
     /// <summary>
-    ///
+    /// This defines the list of tasks associated with the quest. Each task represents a specific action or objective that needs to be completed as part of the quest. 
+    /// The Tasks property is used to organize and manage the various tasks that contribute to the overall completion of the quest.
     /// </summary>
     public List<QuestTaskDto> Tasks { get; set; } = [];
 
@@ -43,4 +31,14 @@ public class CreateWdrbeQuestRequest
     /// This property is used to define the country for the quest classification.
     /// </summary>
     public Guid? CountryId { get; set; }
+    /// <summary>
+    /// Gets or sets the status of quest.
+    /// This property is used to define the status for the quest.
+    /// </summary>
+    public bool IsActive { get; set; }
+    /// <summary>
+    /// Gets or sets the Badge.
+    /// This property is used to define the Badge for the quest classification.
+    /// </summary>
+    public Badge Badge { get; set; }
 }

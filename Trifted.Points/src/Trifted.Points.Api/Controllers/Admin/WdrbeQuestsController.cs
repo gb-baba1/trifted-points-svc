@@ -3,7 +3,6 @@ using Kanject.Core.ApiV2.Controller;
 using Kanject.Identity.Abstractions.Security.SystemPermissions.Attributes;
 using Kanject.NotificationHub.Abstractions.TemplateEngine.Models.NotificationTemplates;
 using Kanject.ServerlessEventHub.Provider.AwsSns.Abstractions.DataStore;
-using Kanject.ServerlessEventHub.Provider.AwsSnsV4.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Interfaces;
@@ -31,7 +30,6 @@ public class WdrbeQuestsController(IServerlessEventHubDataStore serverlessEventH
     /// </summary>
     /// <returns>A response containing a collection of event topics for the Wdrbe quests.</returns>
     [HttpGet("topics")]
-    //[RequiresPermission(name: "view-topics", description: "View available event topics")]
     [ProducesResponseType(typeof(Response<IEnumerable<GetEventTopicsLovResponse>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetEventTopicsLovAsync()
@@ -49,7 +47,6 @@ public class WdrbeQuestsController(IServerlessEventHubDataStore serverlessEventH
     /// <param name="request">The request containing the details of the Wdrbe quest to be created.</param>
     /// <returns>A response containing the details of the created Wdrbe quest.</returns>
     [HttpPost]
-    //[RequiresPermission(name: "create-quest", description: "Create wdrbe quest")]
     [ProducesResponseType(typeof(Response<CreateWdrbeQuestResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateWdrbeQuestAsync(CreateWdrbeQuestRequest? request)
@@ -77,7 +74,7 @@ public class WdrbeQuestsController(IServerlessEventHubDataStore serverlessEventH
     }
 
     /// <summary>
-    /// Get task for a particular quest by id.
+    /// Get task by quest id.
     /// </summary>
     /// <param name="taskId"></param>
     /// <param name="questId"></param>
@@ -95,7 +92,7 @@ public class WdrbeQuestsController(IServerlessEventHubDataStore serverlessEventH
             : ApiResponse(payload);
     }
     /// <summary>
-    /// Get quest by quest id.
+    /// Get quest by id.
     /// </summary>
     /// <param name="questId"></param>
     /// <returns></returns>
@@ -112,17 +109,35 @@ public class WdrbeQuestsController(IServerlessEventHubDataStore serverlessEventH
             : ApiResponse(payload);
     }
     /// <summary>
-    /// Delete quest by quest id.
+    /// Delete quest by id.
     /// </summary>
     /// <param name="questId"></param>
     /// <returns></returns>
     [HttpDelete("{questId}")]
     [Produces("application/json")]
-    [ProducesResponseType(typeof(Response<GetWdrbeQuestTasksResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response<GetWbdrbeQuestResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> RemoveWdrbeQuestByIdAsync([FromRoute] string questId)
     {
         var payload = await wdrbeQuestManagerService.RemoveWdrbeQuestByIdAsync(questId);
+
+        return wdrbeQuestManagerService.HasError
+            ? ApiErrorResponse(wdrbeQuestManagerService.Errors)
+            : ApiResponse(payload);
+    }
+
+    /// <summary>
+    /// Update wdrbe quest.
+    /// </summary>
+    /// <param name="request">The request containing the details of the Wdrbe quest to be updated.</param>
+    /// <returns>A response containing the details of the updated Wdrbe quest.</returns>
+    [HttpPut]
+    [Produces("application/json")]
+    [ProducesResponseType(typeof(Response<GetWbdrbeQuestResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UpdateWdrbeQuestByIdAsync([FromBody] UpdateWdrbeQuestRequest request)
+    {
+        var payload = await wdrbeQuestManagerService.UpdateWdrbeQuestByIdAsync(request);
 
         return wdrbeQuestManagerService.HasError
             ? ApiErrorResponse(wdrbeQuestManagerService.Errors)

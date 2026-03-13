@@ -1,15 +1,19 @@
 using Amazon.DynamoDBv2.Model;
+using Amazon.IdentityManagement.Model;
+using Amazon.Runtime.Internal;
 using Kanject.Core.Api.Abstractions.Exceptions;
 using Kanject.Core.NoSqlDatabase.Provider.DynamoDb.Abstractions.Interfaces;
 using Kanject.Core.NoSqlDatabase.Provider.DynamoDb.Annotations.Attributes;
 using Kanject.Core.NoSqlDatabase.Provider.DynamoDbV2;
 using Kanject.Core.Queue.Abstractions.Interfaces;
+using Kanject.Core.Queue.Abstractions.Models;
 using Kanject.Core.SystemConsole.Extensions;
 using Kanject.ServerlessEventHub.Provider.AwsSns.Abstractions.DataStore;
 using Trifted.Core.Trifted.Identity.Queues;
 using Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Constants;
 using Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Interfaces;
 using Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Models;
+using Trifted.Points.Common.Constants;
 using Trifted.Points.Data.DbContexts;
 using Trifted.Points.Data.Entities;
 using Trifted.Points.Data.Entities.Users;
@@ -180,7 +184,7 @@ public partial class WdrbeQuestManagerService(
             throw new ApiServiceException(WdrbeQuestManagerMessages.SystemCouldNotGetQuest);
         }
     }
-    public async Task<GetWdrbeQuestTasksResponse?> RemoveWdrbeQuestByIdAsync(string questId)
+    public async Task<GetWbdrbeQuestResponse?> RemoveWdrbeQuestByIdAsync(string questId)
     {
         try
         {
@@ -190,33 +194,148 @@ public partial class WdrbeQuestManagerService(
             if (!Guid.TryParse(questId, out var questGuid))
                 throw new ApiValidationException(WdrbeQuestManagerMessages.InvalidQuestId);
 
-            var quest = await Repository.FindWdrbeQuestAsync(questGuid) ?? throw new ApiValidationException(WdrbeQuestManagerMessages.QuestNotFound);
+            var questItemCollection = await Repository.GetItemCollectionAsync(questGuid) ?? throw new ApiValidationException(WdrbeQuestManagerMessages.QuestNotFound);
 
+            if (questItemCollection.WdrbeQuest is null)
+                throw new ApiValidationException(WdrbeQuestManagerMessages.QuestNotFound);
 
-            var questTask = await Repository.WdrbeQuestTasks.FindWdrbeQuestTasksAsync(questGuid);
+            Repository.BeginTransaction();
 
-            foreach (var task in questTask)
-            {
-                await Repository.WdrbeQuestTasks.RemoveAsync(task);
-            }
-
-            await Repository.RemoveAsync(quest);
+            await Repository.RemoveItemCollectionAsync(questItemCollection);
 
             await Repository.CommitAsync();
 
-            return new GetWdrbeQuestTasksResponse
+            return new GetWbdrbeQuestResponse
             {
-                TaskName = quest.Name,
-                MaxAction = 0,
-                PointPerAction = 0,
-                CountryId = quest.CountryId,
-                LastUpdatedOn = quest.LastUpdatedOn,
-                Points = 0
+                QuestName = questItemCollection.WdrbeQuest.ToString(),
+                QuestDescription = questItemCollection.WdrbeQuest.Description,
+                LastUpdatedOn = questItemCollection.WdrbeQuest.LastUpdatedOn,
+                TotalPoints = questItemCollection.WdrbeQuest.Points,
+                IsActive = questItemCollection.WdrbeQuest.IsActive,
+                Badge = questItemCollection.WdrbeQuest.Badge
             };
         }
         catch (Exception ex) when (ex is not ApiServiceException)
         {
             ex.PrintInConsole(tag: nameof(WdrbeQuestTaskByIdAsync));
+            throw new ApiServiceException(WdrbeQuestManagerMessages.SystemCouldNotGetQuest);
+        }
+    }
+    public async Task<GetWbdrbeQuestResponse?> UpdateWdrbeQuestByIdAsync(UpdateWdrbeQuestRequest request)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(request.QuestId))
+                throw new ApiValidationException(WdrbeQuestManagerMessages.InvalidQuestId);
+
+            if (!Guid.TryParse(request.QuestId, out var questGuid))
+                throw new ApiValidationException(WdrbeQuestManagerMessages.InvalidQuestId);
+
+            var questItemCollection = await Repository.GetItemCollectionAsync(questGuid)
+                ?? throw new ApiValidationException(WdrbeQuestManagerMessages.QuestNotFound);
+
+            var quest = questItemCollection.WdrbeQuest
+                ?? throw new ApiValidationException(WdrbeQuestManagerMessages.QuestNotFound);
+
+            var existingTasks = questItemCollection.WdrbeQuestTasks ?? new List<WdrbeQuestTaskEntity>();
+
+            Repository.BeginTransaction();
+
+            var now = CurrentDateTimeAsString;
+
+            var requestTasks = request.Tasks
+                .Where(x => !string.IsNullOrWhiteSpace(x.TaskId))
+                .ToDictionary(x => Guid.Parse(x.TaskId));
+
+            var existingTaskIds = existingTasks.Select(x => x.Id).ToHashSet();
+
+            var tasksToUpdate = existingTasks
+                .Where(t => requestTasks.ContainsKey(t.Id))
+                .Select(existing =>
+                {
+                    var req = requestTasks[existing.Id];
+
+                    return existing with
+                    {
+                        Name = req.TaskName,
+                        PointPerAction = req.PointPerAction,
+                        MaxAction = req.MaxAction,
+                        EventTopic = req.EventTopic,
+                        UserIdentifier = req.UserIdentifier,
+                        CountryId = req.CountryId,
+                        Points = req.PointPerAction * req.MaxAction,
+                        LastUpdatedOn = now
+                    };
+                })
+                .ToList();
+
+            var tasksToCreate = request.Tasks
+                .Where(t => string.IsNullOrWhiteSpace(t.TaskId) || !existingTaskIds.Contains(Guid.Parse(t.TaskId)))
+                .Select(t => new WdrbeQuestTaskEntity
+                {
+                    Id = Guid.NewGuid(),
+                    QuestId = quest.Id,
+                    Name = t.TaskName,
+                    CountryId = t.CountryId,
+                    PointPerAction = t.PointPerAction,
+                    MaxAction = t.MaxAction,
+                    EventTopic = t.EventTopic,
+                    UserIdentifier = t.UserIdentifier,
+                    Points = t.PointPerAction * t.MaxAction,
+                    CreatedOn = now,
+                    LastUpdatedOn = now
+                })
+                .ToList();
+
+            var tasksToDelete = existingTasks
+                .Where(t => !requestTasks.ContainsKey(t.Id))
+                .ToList();
+
+            var updatedPoints = tasksToUpdate.Sum(x => x.Points) + tasksToCreate.Sum(x => x.Points);
+
+            var updatedQuest = quest with
+            {
+                Name = request.QuestName.StripFormat(),
+                Description = request.QuestDescription.StripFormat(),
+                IsActive = request.IsActive,
+                CountryId = request.CountryId,
+                Points = updatedPoints,
+                LastUpdatedOn = now
+            };
+
+            await Repository.UpdateWithIndexAsync(updatedQuest, quest);
+
+            foreach (var updatedTask in tasksToUpdate)
+            {
+                var original = existingTasks.First(x => x.Id == updatedTask.Id);
+                await Repository.WdrbeQuestTasks.UpdateWithIndexAsync(updatedTask, original);
+            }
+
+            foreach (var newTask in tasksToCreate)
+            {
+                await Repository.WdrbeQuestTasks.InsertWithIndexAsync(newTask);
+            }
+
+            foreach (var deleteTask in tasksToDelete)
+            {
+                await Repository.WdrbeQuestTasks.RemoveWithIndexAsync(deleteTask);
+            }
+
+            await Repository.CommitAsync();
+
+            return new GetWbdrbeQuestResponse
+            {
+                QuestName = updatedQuest.Name,
+                QuestDescription = updatedQuest.Description,
+                LastUpdatedOn = updatedQuest.LastUpdatedOn,
+                TotalPoints = updatedQuest.Points,
+                IsActive = updatedQuest.IsActive,
+                Badge = updatedQuest.Badge
+            };
+        }
+        catch (Exception ex) when (ex is not ApiServiceException)
+        {
+            ex.PrintInConsole(tag: nameof(UpdateWdrbeQuestByIdAsync));
             throw new ApiServiceException(WdrbeQuestManagerMessages.SystemCouldNotGetQuest);
         }
     }
@@ -385,18 +504,21 @@ public partial class WdrbeQuestManagerService(
 
     public async Task<WdrbeQuestEntity> ProcessUserPointAsync(Guid userId, Guid questId, Guid taskId)
     {
-        var questTaskTask = Repository.WdrbeQuestTasks.FindWdrbeQuestTaskAsync(questId, taskId);
-        var questTask = Repository.FindWdrbeQuestAsync(questId);
+        var questItemCollectionTask = Repository.GetItemCollectionAsync(questId);
 
         var userQuestTask = userQuestRepository.FindUserQuestAsync(userId, questId);
+
         var userQuestTaskTask = userQuestRepository.UserQuestTask.FindUserQuestTaskAsync(userId, questId, taskId);
 
         var userPointTask = userQuestRepository.UserPoint.FindUserPointAsync(userId);
 
-        await Task.WhenAll(questTaskTask, questTask, userQuestTask, userQuestTaskTask, userPointTask);
+        await Task.WhenAll(questItemCollectionTask, userQuestTask, userQuestTaskTask, userPointTask);
 
-        var quest = questTask.Result ?? throw new ApiValidationException(WdrbeQuestManagerMessages.QuestNotFound);
-        var task = questTaskTask.Result ?? throw new ApiValidationException(WdrbeQuestManagerMessages.TaskNotFound);
+        var questResult = questItemCollectionTask.Result ?? throw new ApiValidationException(WdrbeQuestManagerMessages.QuestNotFound);
+
+        var quest = questResult.WdrbeQuest ?? throw new ApiValidationException(WdrbeQuestManagerMessages.QuestNotFound);
+
+        var task = questResult.WdrbeQuestTasks.FirstOrDefault(x => x.Id == taskId) ?? throw new ApiValidationException(WdrbeQuestManagerMessages.TaskNotFound);
 
         var userQuest = userQuestTask.Result;
         var userTask = userQuestTaskTask.Result;

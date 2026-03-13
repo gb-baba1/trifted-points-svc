@@ -16,22 +16,6 @@ public record WdrbeQuestTaskEntity : AbstractBaseEntity
     public override string SortKey { get; set; } = string.Empty;
 
     /// <summary>
-    /// Represents the Partition Key (Hash Key) for the "Gsi1Index" Global Secondary Index (GSI)
-    /// in DynamoDB. The value of this property is determined based on the defined template
-    /// in the associated KeyTemplate attribute.
-    /// </summary>
-    /// <remarks>
-    /// This property is designed to support advanced querying capabilities by serving as the
-    /// hash key in the Global Secondary Index (GSI). It is primarily used for efficient retrieval
-    /// of entities, such as "WdrbeQuests", grouped under the same GSI partition. The usage of
-    /// a partitioned and indexed structure in DynamoDB enables scalability and optimized query
-    /// performance for workloads with non-primary key access patterns.
-    /// </remarks>
-    [KeyTemplate("WdrbeQuests")]
-    [DynamoDBGlobalSecondaryIndexHashKey]
-    public override string Gsi1Pk { get; set; } = string.Empty;
-
-    /// <summary>
     /// Represents the Sort Key (Range Key) for the "Gsi1Index" Global Secondary Index (GSI)
     /// in DynamoDB. The value of this property is dynamically constructed based on the template
     /// defined in the associated KeyTemplate attribute.

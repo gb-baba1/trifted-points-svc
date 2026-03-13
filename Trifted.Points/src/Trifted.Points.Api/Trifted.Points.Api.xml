@@ -123,6 +123,13 @@
             <param name="questId"></param>
             <returns></returns>
         </member>
+        <member name="M:Trifted.Points.Api.Controllers.Admin.WdrbeQuestsController.UpdateWdrbeQuestByIdAsync(Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Models.UpdateWdrbeQuestRequest)">
+            <summary>
+            Update a new wdrbe quest.
+            </summary>
+            <param name="request">The request containing the details of the Wdrbe quest to be updated.</param>
+            <returns>A response containing the details of the updated Wdrbe quest.</returns>
+        </member>
         <member name="T:Trifted.Points.Api.Controllers.User.UserQuestsController">
             <summary>
             Controller for managing Wdrbe quests and event topics within the admin module.

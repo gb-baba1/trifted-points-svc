@@ -1,6 +1,6 @@
 namespace Trifted.Points.Data.Dtos;
 
-public class QuestTaskDto
+public class UpdateQuestTaskDto
 {
     /// <summary>
     /// Gets or sets the Id associated with the request.
@@ -12,6 +12,11 @@ public class QuestTaskDto
     /// This property is used to define or categorize the specific purpose or classification of the task.
     /// </summary>
     public string TaskName { get; set; } = string.Empty;
+    /// <summary>
+    /// Gets or sets the user Identifier associated with the request.
+    /// This property is used to define or categorize the specific purpose or classification of the user Identifier.
+    /// </summary>
+    public string UserIdentifier { get; set; } = string.Empty;
     /// <summary>
     /// Gets or sets the EventTopic associated with the request.
     /// This property is used to define or categorize the specific EventTopic..

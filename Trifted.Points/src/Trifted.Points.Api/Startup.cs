@@ -16,12 +16,12 @@ using System.Text.Json.Serialization;
 using Trifted.Core.Common.Configuration;
 using Trifted.Core.Common.Extensions;
 using Trifted.Core.Trifted.Points;
-using Trifted.Core.Trifted.Wallet;
 using Trifted.Points.Api.Components.Filters;
 using Trifted.Points.Api.Configurations;
 using Trifted.Points.Common.Constants;
 using Trifted.Core.Trifted.Identity.Queues;
 using Trifted.Points.Data.DbContexts;
+using Kanject.Core.ApiV2.Extensions;
 
 
 namespace Trifted.Points.Api;
@@ -191,6 +191,12 @@ public class Startup(IConfiguration configuration)
         //        .CreatePointsSvcDefaultEventQueue(options => { options.Namespace = string.Empty; })
         //        .SubscribeMarketplaceSvcDefaultEventQueueTopics();
 
+        services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
+
         services.AddBusinessServices(); //Registers all business services dependencies
 
         services.AddControllers()
@@ -199,14 +205,7 @@ public class Startup(IConfiguration configuration)
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
 
-
-        services.AddBusinessServices(); //Registers all business services dependencies
-
-        services.AddControllers()
-            .AddJsonOptions(options =>
-            {
-                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            });
+        services.AddCoreExceptionHandlerMiddleware();
     }
 
     /// <summary>
@@ -221,6 +220,7 @@ public class Startup(IConfiguration configuration)
         if (env.IsDevelopment())
             app.UseDeveloperExceptionPage();
 
+        app.UseCoreExceptionHandlerMiddleware();
         #region Swagger Configuration
 
         app.UseSwaggerUI(options =>
@@ -243,8 +243,8 @@ public class Startup(IConfiguration configuration)
         #endregion
 
         app.UseDefaultAppCors(
-            Configuration); //Configure default app CORS using whitelisted domain names in AppSettings.json file
-        app.UseAppUtilityService(env); //Registers Kanject Core dependencies
+            Configuration);
+        app.UseAppUtilityService(env);
 
         app.UseRouting();
 

@@ -103,7 +103,7 @@
         </member>
         <member name="M:Trifted.Points.Api.Controllers.Admin.WdrbeQuestsController.GetWdrbeQuestTaskByIdAsync(System.String,System.String)">
             <summary>
-            Get task for a particular quest by id.
+            Get task by quest id.
             </summary>
             <param name="taskId"></param>
             <param name="questId"></param>
@@ -111,21 +111,21 @@
         </member>
         <member name="M:Trifted.Points.Api.Controllers.Admin.WdrbeQuestsController.GetQuestByIdAsync(System.String)">
             <summary>
-            Get quest by quest id.
+            Get quest by id.
             </summary>
             <param name="questId"></param>
             <returns></returns>
         </member>
         <member name="M:Trifted.Points.Api.Controllers.Admin.WdrbeQuestsController.RemoveWdrbeQuestByIdAsync(System.String)">
             <summary>
-            Delete quest by quest id.
+            Delete quest by id.
             </summary>
             <param name="questId"></param>
             <returns></returns>
         </member>
         <member name="M:Trifted.Points.Api.Controllers.Admin.WdrbeQuestsController.UpdateWdrbeQuestByIdAsync(Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Models.UpdateWdrbeQuestRequest)">
             <summary>
-            Update a new wdrbe quest.
+            Update wdrbe quest.
             </summary>
             <param name="request">The request containing the details of the Wdrbe quest to be updated.</param>
             <returns>A response containing the details of the updated Wdrbe quest.</returns>
@@ -153,43 +153,6 @@
             Get quest of a user
             </summary>
             <returns></returns>
-        </member>
-        <member name="T:Trifted.Points.Api.Controllers.ValuesController">
-            <summary>
-                ValuesController
-            </summary>
-        </member>
-        <member name="M:Trifted.Points.Api.Controllers.ValuesController.Get">
-            <summary>
-                GET api/values
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Trifted.Points.Api.Controllers.ValuesController.Get(System.Int32)">
-            <summary>
-                GET api/values/5
-            </summary>
-            <param name="id"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Trifted.Points.Api.Controllers.ValuesController.Post(System.String)">
-            <summary>
-                POST api/values
-            </summary>
-            <param name="value"></param>
-        </member>
-        <member name="M:Trifted.Points.Api.Controllers.ValuesController.Put(System.Int32,System.String)">
-            <summary>
-                PUT api/values/5
-            </summary>
-            <param name="id"></param>
-            <param name="value"></param>
-        </member>
-        <member name="M:Trifted.Points.Api.Controllers.ValuesController.Delete(System.Int32)">
-            <summary>
-                DELETE api/values/5
-            </summary>
-            <param name="id"></param>
         </member>
         <member name="T:Trifted.Points.Api.LambdaEntryPoint">
             <summary>

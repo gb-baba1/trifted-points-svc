@@ -7,7 +7,8 @@ public readonly struct WdrbeQuestManagerMessages
 
     public static string SystemCouldNotCreateQuest =>
         "System could not create quest at this time, Please try again or kindly contact customer support for further assistance";
-
+    public static string SystemCouldNoUnsubscribeQuestTopic =>
+    "System could not unsubscribe quest topic at this time, Please try again or kindly contact customer support for further assistance";
     public static string EventTopicNotFound => "Event topic not found";
     public static string EventTopicAlreadyCreated => "Event topic already created for a quest";
     public static string QuestIdIsRequired => "Quest id is required";

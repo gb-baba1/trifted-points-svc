@@ -17,7 +17,7 @@
         <!-- Excludes .pdb files from published lambda functions during code build phase -->
         <StripSymbols>true</StripSymbols>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-<!--        <QueueSchemaOutputDir>Docs</QueueSchemaOutputDir>-->
+        <QueueSchemaOutputDir>Docs</QueueSchemaOutputDir>
     </PropertyGroup>
     <PropertyGroup>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>

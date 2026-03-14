@@ -167,7 +167,6 @@ public class Startup(IConfiguration configuration)
             options.AWSAccessKey = _appSettings.AwsAccessKeyId;
             options.AWSSecretKey = _appSettings.AwsAccessSecretKey;
             options.AWSRegion = _appSettings.AwsRegion;
-            options.Namespace = AppConstants.QueueNamespace;
             options.UseDeadLetterQueue = true;
             options.DlqMessageRetentionPeriod = 14;
             options.CreateQueueIfNotExist = _appSettings.ShouldSetupQueue;

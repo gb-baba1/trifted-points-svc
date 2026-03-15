@@ -3,7 +3,7 @@ using Amazon.SQS.Model;
 using Kanject.Core.Api.Abstractions.Exceptions;
 using Kanject.Core.Queue.Provider.AwsSqs.Annotations.Attributes;
 using System.Text.Json;
-using Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Interfaces;
+using Trifted.Points.Business.Services.UserQuest.Abstractions.Interfaces;
 using Trifted.Points.Data;
 using Trifted.Points.Data.Repositories;
 using static Trifted.Points.Data.Repositories.WdrbeQuestRepositoryItemCollectionType;
@@ -12,8 +12,7 @@ namespace Trifted.Points.Tasks.Consumers;
 
 [QueueConsumer]
 [QueueConsumerDependency(typeof(WdrbeQuestRepository))]
-[QueueConsumerDependency(typeof(UserQuestRepository))]
-[QueueConsumerDependency(typeof(IWdrbeQuestManagerService))]
+[QueueConsumerDependency(typeof(IUserQuestManagerService))]
 public partial class WdrbeQuestConsumer
 {
     protected override async Task ConsumeAsync(List<Message> messages)
@@ -60,7 +59,7 @@ public partial class WdrbeQuestConsumer
                         throw new ApiValidationException("Unable to parse user identifier from message body");
                     }
 
-                    var response = await WdrbeQuestManagerService.ProcessUserPointAsync(userId: userId,
+                    var response = await UserQuestManagerService.ProcessUserPointAsync(userId: userId,
                         questId: quest.QuestId, taskId: quest.Id);
 
                     response.PrintInConsole();
@@ -70,7 +69,7 @@ public partial class WdrbeQuestConsumer
             {
                 ex.PrintInConsole();
                 Response.BatchItemFailures.Add(new SQSBatchResponse.BatchItemFailure
-                    { ItemIdentifier = messageContext.MessageId });
+                { ItemIdentifier = messageContext.MessageId });
             }
         }
     }

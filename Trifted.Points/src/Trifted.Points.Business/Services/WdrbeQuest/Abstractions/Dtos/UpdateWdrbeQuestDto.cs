@@ -2,9 +2,9 @@
 using Trifted.Points.Data.Dtos;
 using Trifted.Points.Data.Enums;
 
-namespace Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Models
+namespace Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Dtos
 {
-    public class UpdateWdrbeQuestRequest
+    public class UpdateWdrbeQuestDto
     {
         [Required]
         public string QuestId { get; set; } = string.Empty;

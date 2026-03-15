@@ -1,0 +1,4 @@
+
+namespace Trifted.Points.Business.Services.QuestEventSubscription.Abstractions.Interfaces;
+
+public interface IQuestEventSubscriptionManagerService : IQuestEventSubscriptionManager;

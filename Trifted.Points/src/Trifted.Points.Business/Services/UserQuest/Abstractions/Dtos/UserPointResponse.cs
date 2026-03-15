@@ -1,6 +1,6 @@
 ﻿using Trifted.Points.Data.Enums;
 
-namespace Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Models
+namespace Trifted.Points.Business.Services.UserQuest.Abstractions.Dtos
 {
     public class UserPointResponse
     {

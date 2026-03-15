@@ -88,7 +88,7 @@
             </summary>
             <returns>A response containing a collection of event topics for the Wdrbe quests.</returns>
         </member>
-        <member name="M:Trifted.Points.Api.Controllers.Admin.WdrbeQuestsController.CreateWdrbeQuestAsync(Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Models.CreateWdrbeQuestRequest)">
+        <member name="M:Trifted.Points.Api.Controllers.Admin.WdrbeQuestsController.CreateWdrbeQuestAsync(Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Dtos.CreateWdrbeQuestDto)">
             <summary>
             Creates a new wdrbe quest.
             </summary>
@@ -123,7 +123,7 @@
             <param name="questId"></param>
             <returns></returns>
         </member>
-        <member name="M:Trifted.Points.Api.Controllers.Admin.WdrbeQuestsController.UpdateWdrbeQuestByIdAsync(Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Models.UpdateWdrbeQuestRequest)">
+        <member name="M:Trifted.Points.Api.Controllers.Admin.WdrbeQuestsController.UpdateWdrbeQuestByIdAsync(Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Dtos.UpdateWdrbeQuestDto)">
             <summary>
             Update wdrbe quest.
             </summary>
@@ -132,20 +132,18 @@
         </member>
         <member name="T:Trifted.Points.Api.Controllers.User.UserQuestsController">
             <summary>
-            Controller for managing Wdrbe quests and event topics within the admin module.
+            Controller for managing a users's Wdrbe quests.
             </summary>
             <remarks>
-            The <c>WdrbeQuestsController</c> provides endpoints to interact with the Wdrbe quests, including
-            retrieving available event topics and creating new quests.
+            The <c>UserQuestsController</c> provides endpoints to interact with the user's Wdrbe quests
             </remarks>
         </member>
-        <member name="M:Trifted.Points.Api.Controllers.User.UserQuestsController.#ctor(Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Interfaces.IWdrbeQuestManagerService)">
+        <member name="M:Trifted.Points.Api.Controllers.User.UserQuestsController.#ctor(Trifted.Points.Business.Services.UserQuest.Abstractions.Interfaces.IUserQuestManagerService)">
             <summary>
-            Controller for managing Wdrbe quests and event topics within the admin module.
+            Controller for managing a users's Wdrbe quests.
             </summary>
             <remarks>
-            The <c>WdrbeQuestsController</c> provides endpoints to interact with the Wdrbe quests, including
-            retrieving available event topics and creating new quests.
+            The <c>UserQuestsController</c> provides endpoints to interact with the user's Wdrbe quests
             </remarks>
         </member>
         <member name="M:Trifted.Points.Api.Controllers.User.UserQuestsController.GetUsersQuestPointAsync">

@@ -1,10 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Dtos;
 using Trifted.Points.Data.Enums;
 
-namespace Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Models;
+namespace Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Dtos;
 
-public class CreateWdrbeQuestRequest
+public class CreateWdrbeQuestDto
 {
 
     /// <summary>

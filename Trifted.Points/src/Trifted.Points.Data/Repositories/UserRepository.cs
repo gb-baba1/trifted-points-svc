@@ -1,11 +1,12 @@
-using Kanject.Core.NoSqlDatabase.Provider.DynamoDb.Annotations.Attributes;
+﻿using Kanject.Core.NoSqlDatabase.Provider.DynamoDb.Annotations.Attributes;
 using Trifted.Points.Data.DbContexts;
 using Trifted.Points.Data.Entities.Users;
 
 namespace Trifted.Points.Data.Repositories;
 
-[Repository(Entity = typeof(UserQuestEntity), Version = 2)]
+[Repository(Entity = typeof(UserProfileEntity), Version = 2)]
 [DbContext(typeof(TriftedPointsDbContext))]
 [EntityRepository<UserPointEntity>]
+[EntityRepository<List<UserQuestEntity>>]
 [EntityRepository<List<UserQuestTaskEntity>>]
-public partial class UserQuestRepository;
+public partial class UserRepository;

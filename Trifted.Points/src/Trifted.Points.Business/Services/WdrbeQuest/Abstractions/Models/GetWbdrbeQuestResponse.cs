@@ -1,5 +1,4 @@
-﻿
-using Trifted.Points.Data.Enums;
+﻿using Trifted.Points.Data.Enums;
 
 namespace Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Models
 {
@@ -9,7 +8,7 @@ namespace Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Models
         /// Gets or sets the id associated with the request.
         /// This property is used to define or categorize the specific purpose or classification of the id.
         /// </summary>
-        public string QuestId { get; set; } = string.Empty;
+        public Guid QuestId { get; set; }
         /// <summary>
         /// Gets or sets the type associated with the request.
         /// This property is used to define or categorize the specific purpose or classification of the request.

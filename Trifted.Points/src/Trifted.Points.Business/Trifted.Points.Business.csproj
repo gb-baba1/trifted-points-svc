@@ -8,4 +8,8 @@
     <ItemGroup>
       <ProjectReference Include="..\Trifted.Points.Data\Trifted.Points.Data.csproj" />
     </ItemGroup>
+    <ItemGroup>
+      <None Include="Services\UserQuest\Abstractions\Dtos\UserQuestTaskDto.cs" />
+      <None Include="Services\WdrbeQuest\Abstractions\Models\CreateWdrbeQuest.cs" />
+    </ItemGroup>
 </Project>

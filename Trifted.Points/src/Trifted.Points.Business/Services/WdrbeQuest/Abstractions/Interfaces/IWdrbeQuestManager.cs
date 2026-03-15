@@ -1,16 +1,18 @@
+using Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Dtos;
 using Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Models;
-using Trifted.Points.Data.Entities.WdrbeQuest;
+using Trifted.Points.Data.Repositories;
 
 namespace Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Interfaces;
 
 public interface IWdrbeQuestManager
 {
-    public Task<CreateWdrbeQuestResponse?> CreateWdrbeQuestAsync(CreateWdrbeQuestRequest? request, Guid userId);
-    public Task<GetWdrbeQuestTasksResponse?> WdrbeQuestTaskByIdAsync(string taskId, string questId);
+    public Task<CreateWdrbeQuestResponse?> CreateWdrbeQuestAsync(CreateWdrbeQuestDto? request, Guid userId);
+    public Task<GetWbdrbeQuestResponse?> UpdateWdrbeQuestByIdAsync(UpdateWdrbeQuestDto request);
+    Task<WdrbeQuestRepositoryItemCollection> GetItemCollectionAsync(string questId);
+    public Task<GetWdrbeQuestTasksResonse?> WdrbeQuestTaskByIdAsync(string taskId, string questId);
+    public Task<List<GetWdrbeQuestTasksResonse>> GetWdrbeQuestTasksAsync();
     public Task<WdrbeQuestResponse?> GetQuestByIdAsync(string questId);
     public Task<List<GetWbdrbeQuestResponse>> GetWdrbeQuestsAsync();
-    public Task<WdrbeQuestEntity> ProcessUserPointAsync(Guid userId, Guid questId, Guid taskId);
-    public Task<UserPointResponse> GetUsersQuestPointAsync(Guid userId);
     public Task<GetWbdrbeQuestResponse?> RemoveWdrbeQuestByIdAsync(string questId);
-    public Task<GetWbdrbeQuestResponse?> UpdateWdrbeQuestByIdAsync(UpdateWdrbeQuestRequest request);
+
 }

@@ -1,12 +1,12 @@
-namespace Trifted.Points.Data.Dtos;
+﻿namespace Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Models;
 
-public class UpdateQuestTaskDto
+public class GetWdrbeQuestTasksResonse
 {
     /// <summary>
     /// Gets or sets the Id associated with the request.
     /// This property is used to define or categorize the specific purpose or classification of the Id.
     /// </summary>
-    public string TaskId { get; set; } = string.Empty;
+    public Guid TaskId { get; set; }
 
     /// Gets or sets the task associated with the request.
     /// This property is used to define or categorize the specific purpose or classification of the task.

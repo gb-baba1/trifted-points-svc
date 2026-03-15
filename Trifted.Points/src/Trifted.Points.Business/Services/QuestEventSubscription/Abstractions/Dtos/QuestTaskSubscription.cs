@@ -1,4 +1,4 @@
-﻿namespace Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Models
+﻿namespace Trifted.Points.Business.Services.QuestEventSubscription.Abstractions.Dtos
 {
     public class QuestTaskSubscription
     {

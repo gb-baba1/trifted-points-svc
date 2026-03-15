@@ -5,6 +5,7 @@ using Kanject.NotificationHub.Abstractions.TemplateEngine.Models.NotificationTem
 using Kanject.ServerlessEventHub.Provider.AwsSns.Abstractions.DataStore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Dtos;
 using Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Interfaces;
 using Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Models;
 
@@ -22,7 +23,9 @@ namespace Trifted.Points.Api.Controllers.Admin;
 [Authorize]
 [ApiController]
 [Module("wdrbe-quests")]
-public class WdrbeQuestsController(IServerlessEventHubDataStore serverlessEventHubDataStore, IWdrbeQuestManagerService wdrbeQuestManagerService) : BaseController
+public class WdrbeQuestsController(
+    IServerlessEventHubDataStore serverlessEventHubDataStore,
+    IWdrbeQuestManagerService wdrbeQuestManagerService) : BaseController
 {
 
     /// <summary>
@@ -49,7 +52,7 @@ public class WdrbeQuestsController(IServerlessEventHubDataStore serverlessEventH
     [HttpPost]
     [ProducesResponseType(typeof(Response<CreateWdrbeQuestResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> CreateWdrbeQuestAsync(CreateWdrbeQuestRequest? request)
+    public async Task<IActionResult> CreateWdrbeQuestAsync(CreateWdrbeQuestDto? request)
     {
         var payload = await wdrbeQuestManagerService.CreateWdrbeQuestAsync(request, CurrentUserId);
 
@@ -81,7 +84,7 @@ public class WdrbeQuestsController(IServerlessEventHubDataStore serverlessEventH
     /// <returns></returns>
     [HttpGet("{questId}/task/{taskId}")]
     [Produces("application/json")]
-    [ProducesResponseType(typeof(Response<GetWdrbeQuestTasksResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response<GetWdrbeQuestTasksResonse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetWdrbeQuestTaskByIdAsync([FromRoute] string taskId, [FromRoute] string questId)
     {
@@ -98,7 +101,7 @@ public class WdrbeQuestsController(IServerlessEventHubDataStore serverlessEventH
     /// <returns></returns>
     [HttpGet("{questId}")]
     [Produces("application/json")]
-    [ProducesResponseType(typeof(Response<GetWdrbeQuestTasksResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response<GetWdrbeQuestTasksResonse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetQuestByIdAsync([FromRoute] string questId)
     {
@@ -135,7 +138,7 @@ public class WdrbeQuestsController(IServerlessEventHubDataStore serverlessEventH
     [Produces("application/json")]
     [ProducesResponseType(typeof(Response<GetWbdrbeQuestResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> UpdateWdrbeQuestByIdAsync([FromBody] UpdateWdrbeQuestRequest request)
+    public async Task<IActionResult> UpdateWdrbeQuestByIdAsync([FromBody] UpdateWdrbeQuestDto request)
     {
         var payload = await wdrbeQuestManagerService.UpdateWdrbeQuestByIdAsync(request);
 

@@ -10,7 +10,7 @@ public interface IWdrbeQuestManager
     public Task<GetWbdrbeQuestResponse?> UpdateWdrbeQuestByIdAsync(UpdateWdrbeQuestDto request);
     Task<WdrbeQuestRepositoryItemCollection> GetItemCollectionAsync(string questId);
     public Task<GetWdrbeQuestTasksResonse?> WdrbeQuestTaskByIdAsync(string taskId, string questId);
-    public Task<List<GetWdrbeQuestTasksResonse>> GetWdrbeQuestTasksAsync();
+    public Task<List<GetWdrbeQuestTasksResonse>> GetTasksByQuestIdsAsync(List<Guid> questIds);
     public Task<WdrbeQuestResponse?> GetQuestByIdAsync(string questId);
     public Task<List<GetWbdrbeQuestResponse>> GetWdrbeQuestsAsync();
     public Task<GetWbdrbeQuestResponse?> RemoveWdrbeQuestByIdAsync(string questId);

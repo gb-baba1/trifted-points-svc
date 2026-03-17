@@ -31,6 +31,7 @@ public record WdrbeQuestTaskEntity : AbstractBaseEntity
     [DynamoDBGlobalSecondaryIndexRangeKey]
     public override string Gsi1Sk { get; set; } = string.Empty;
 
+
     [CompositeUnique("UniqueQuest")]
     [Collection(name: "QuestEventTopic")]
     [DynamoDBProperty]

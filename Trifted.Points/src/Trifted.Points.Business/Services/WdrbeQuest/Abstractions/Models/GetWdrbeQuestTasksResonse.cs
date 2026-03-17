@@ -7,6 +7,11 @@ public class GetWdrbeQuestTasksResonse
     /// This property is used to define or categorize the specific purpose or classification of the Id.
     /// </summary>
     public Guid TaskId { get; set; }
+    /// <summary>
+    /// Gets or sets the quest id associated with the request.
+    /// This property is used to define or categorize the specific purpose or classification of the Id.
+    /// </summary>
+    public Guid QuestId { get; set; }
 
     /// Gets or sets the task associated with the request.
     /// This property is used to define or categorize the specific purpose or classification of the task.

@@ -381,30 +381,35 @@ public partial class WdrbeQuestManagerService(
             throw new ApiServiceException(WdrbeQuestManagerMessages.SystemCouldNotGetQuest);
         }
     }
-    public async Task<List<GetWdrbeQuestTasksResonse>> GetWdrbeQuestTasksAsync()
+    public async Task<List<GetWdrbeQuestTasksResonse>> GetTasksByQuestIdsAsync(List<Guid> questIds)
     {
         try
         {
-            var tasks = await Repository.WdrbeQuestTasks.FindWdrbeQuestTasksAsync();
-            return
-            [
-                .. tasks.Select(g => new GetWdrbeQuestTasksResonse
-                {
-                    TaskId = g.Id,
-                    TaskName = g.Name,
-                    PointPerAction = g.PointPerAction,
-                    CountryId = g.CountryId,
-                    EventTopic = g.EventTopic,
-                    LastUpdatedOn = g.LastUpdatedOn,
-                    MaxAction= g.MaxAction,
-                    UserIdentifier = g.UserIdentifier
-                })
-            ];
+            if (questIds == null || questIds.Count == 0)
+                return [];
+
+            var tasks = await Repository.WdrbeQuestTasks.FindWdrbeQuestTasksAsync(
+                questIds.ToArray(),
+                isConsistentRead: false
+            );
+
+            return [.. tasks.Select(t => new GetWdrbeQuestTasksResonse
+            {
+                TaskId = t.Id,
+                QuestId = t.QuestId,
+                TaskName = t.Name,
+                PointPerAction = t.PointPerAction,
+                MaxAction = t.MaxAction,
+                Points = t.Points,
+                EventTopic = t.EventTopic,
+                CountryId = t.CountryId,
+                LastUpdatedOn = t.LastUpdatedOn
+            })];
         }
-        catch (Exception ex) when (ex is not ApiServiceException)
+        catch (Exception ex)
         {
-            ex.PrintInConsole(tag: nameof(GetWdrbeQuestTasksAsync));
-            throw new ApiServiceException(WdrbeQuestManagerMessages.SystemCouldNotGetQuest);
+            ex.PrintInConsole(tag: nameof(GetTasksByQuestIdsAsync));
+            throw;
         }
     }
 }

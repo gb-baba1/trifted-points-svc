@@ -138,55 +138,81 @@ public partial class UserQuestManagerService(
             throw new ApiServiceException(UserQuestManagerMessages.SystemCouldNotProcessUserQuest, ex);
         }
     }
-
     public async Task<UserPointResponse> GetUsersQuestPointAsync(Guid userId)
     {
         try
         {
             var questsTask = wdrbeQuestManagerService.GetWdrbeQuestsAsync();
-            var tasksTask = wdrbeQuestManagerService.GetWdrbeQuestTasksAsync();
             var userCollectionTask = Repository.GetItemCollectionAsync(userId);
 
-            await Task.WhenAll(questsTask, tasksTask, userCollectionTask);
+            await Task.WhenAll(questsTask, userCollectionTask);
 
-            var allQuests = questsTask.Result;
+            var allQuests = await questsTask;
+            var userCollection = await userCollectionTask;
 
             if (allQuests == null || allQuests.Count == 0)
             {
                 return new UserPointResponse();
             }
 
-            var allTasks = tasksTask.Result;
-            var userCollection = userCollectionTask.Result;
+            var questIds = allQuests.Select(q => q.QuestId).ToList();
 
-            if (allQuests == null || allQuests.Count == 0)
-                return new UserPointResponse();
+            var allTasks = await wdrbeQuestManagerService.GetTasksByQuestIdsAsync(questIds);
+
+            var tasksByQuestId = allTasks
+                .GroupBy(t => t.QuestId)
+                .ToDictionary(g => g.Key, g => g.ToList());
 
             var userQuests = userCollection?.UserQuests ?? [];
             var userTasks = userCollection?.UserQuestTasks ?? [];
 
-            var taskLookup = allTasks.ToDictionary(t => t.TaskId, t => t.TaskName);
             var userQuestLookup = userQuests.ToDictionary(q => q.QuestId);
 
-            var tasksByQuest = userTasks
+            var userTasksByQuestAndTask = userTasks
                 .GroupBy(t => t.QuestId)
-                .ToDictionary(g => g.Key, g => g.ToList());
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.ToDictionary(t => t.TaskId, t => t)
+                );
 
             var totalUserPoints = userQuests.Sum(q => q.Points);
 
             var questResponses = allQuests.Select(quest =>
             {
-                userQuestLookup.TryGetValue(quest.QuestId, out var userQuest);
-                var pointsEarned = userQuest?.Points ?? 0;
+                var pointsEarned = userQuestLookup.TryGetValue(quest.QuestId, out var userQuest)
+                    ? userQuest.Points
+                    : 0;
 
-                var questTasks = tasksByQuest.TryGetValue(quest.QuestId, out var tasks)
-                    ? tasks.Select(t => new UserQuestTaskResponse
-                    {
-                        TaskName = taskLookup.TryGetValue(t.TaskId, out var name) ? name : string.Empty,
-                        PointsEarned = t.Points,
-                        IsCompleted = t.IsCompleted
-                    }).ToList()
+                var questTasks = tasksByQuestId.TryGetValue(quest.QuestId, out var tasks)
+                    ? tasks
                     : [];
+
+                var userTasksForQuest = userTasksByQuestAndTask.TryGetValue(quest.QuestId, out var userTaskDict)
+                    ? userTaskDict
+                    : [];
+
+                var taskResponses = questTasks
+                    .Select(task =>
+                    {
+                        var userTask = userTasksForQuest.TryGetValue(task.TaskId, out var ut) ? ut : null;
+
+                        var taskPoints = userTask?.Points ?? 0;
+                        var maxTaskPoints = task.PointPerAction * task.MaxAction;
+                        var completionPercentage = maxTaskPoints == 0
+                            ? 0
+                            : Math.Round((decimal)taskPoints / maxTaskPoints * 100, 2);
+
+                        return new UserQuestTaskResponse
+                        {
+                            TaskName = task.TaskName,
+                            TotalPoints = maxTaskPoints,
+                            PointsEarned = taskPoints,
+                            CompletionPercentage = completionPercentage,
+                            IsCompleted = userTask?.IsCompleted ?? false
+                        };
+                    })
+                    .OrderBy(t => t.TaskName)
+                    .ToList();
 
                 return new UserQuestResponse
                 {
@@ -197,14 +223,11 @@ public partial class UserQuestManagerService(
                     CompletionPercentage = quest.TotalPoints == 0
                         ? 0
                         : (int)((double)pointsEarned / quest.TotalPoints * 100),
-
                     IsCompleted = pointsEarned >= quest.TotalPoints,
-
                     Badge = pointsEarned >= quest.TotalPoints
                         ? quest.Badge
                         : Data.Enums.Badge.NoBadge,
-
-                    QuestTasks = questTasks
+                    QuestTasks = taskResponses
                 };
             }).ToList();
 
@@ -220,4 +243,5 @@ public partial class UserQuestManagerService(
             throw new ApiServiceException(UserQuestManagerMessages.SystemCouldNotGetUserQuest, ex);
         }
     }
+
 }

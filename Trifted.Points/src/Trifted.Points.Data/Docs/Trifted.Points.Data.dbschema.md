@@ -3055,4 +3055,4 @@ The following attributes support `{PropertyName}` template interpolation:
 
 ---
 
-*Made with ❤️ from the Kanject Team — Generated on 2026-03-15 at 11:43:23 UTC (in 0.43s)*
+*Made with ❤️ from the Kanject Team — Generated on 2026-03-15 at 20:01:50 UTC (in 0.29s)*

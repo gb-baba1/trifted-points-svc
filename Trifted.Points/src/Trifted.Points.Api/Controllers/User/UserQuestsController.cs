@@ -36,5 +36,4 @@ public class UserQuestsController(IUserQuestManagerService userQuestManagerServi
             ? ApiErrorResponse(userQuestManagerService.Errors)
             : ApiResponse(payload);
     }
-
 }

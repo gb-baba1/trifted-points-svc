@@ -17,6 +17,6 @@
   "stack-name": "trifted-points-tasks",
   "environment-variables": "\"ASPNETCORE_ENVIRONMENT\"=\"Production\";\"ASPNETCORE_LAMBDA_ENVIRONMENT\"=\"Staging\";",
   "function-role": "",
-  "template": "template.stage.json",
+  "template": "serverless.template.stage.json",
   "template-parameters": ""
 }

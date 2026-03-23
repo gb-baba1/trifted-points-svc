@@ -1,10 +1,10 @@
 {
   "profiles": {
-    "Mock Lambda Test Tool Rider": {
+    "Mock Lambda Test Tool": {
       "commandName": "Executable",
-      "commandLineArgs": "/Users/omogbolahanakinsanya/.dotnet/tools/.store/amazon.lambda.testtool-8.0/0.16.2/amazon.lambda.testtool-8.0/0.16.2/tools/net8.0/any/Amazon.Lambda.TestTool.BlazorTester.dll --port 5050",
-      "workingDirectory": "$(ProjectDir)",
-      "executablePath": "dotnet"
+      "commandLineArgs": "--port 5050",
+      "executablePath": "C:\\Users\\HENRY\\.dotnet\\tools\\dotnet-lambda-test-tool-8.0.exe",
+      "workingDirectory": "$(ProjectDir)"
     }
   }
 }

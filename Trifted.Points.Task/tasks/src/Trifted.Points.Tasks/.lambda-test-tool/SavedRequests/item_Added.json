@@ -1,0 +1,51 @@
+{
+    "Records": [
+        {
+            "MessageId": "bbcf7693-471f-47f0-a031-6d11c76dbd69",
+            "ReceiptHandle": "AQEBgBlS68oZnFu8vcb3uO020YCnOn/LXEe3ZfFcIPdqF71jsBq1VUx87k7zaYRE9SM+JZr7qtrjBCFjJIEI9g7HhSvULb9Bg0m+J48uZAWAV3cNZC96Se8FrIMCNarh7yd1k+SezjL4idFgWMRqrxfAKa9jkaK3aiwYJRrCaoiDSWoSU6u3WFYghH4MOr2Eghc4wynBWBrD0N4X0k2PrrR/XaN4wI/JaAzSNqbymngmbUYZGOCY6L57P/RUzRNYj1WRpN+JiqIbcs9CmXRAcKbJoov+s2veAeoqGqDck+Us8FLRNlNYizK8f4AoBbPKmOHVW4bVCOeL792vhB24rjkFp89ekSz2RgU5lWkyrqJpcmW0CRnAiiBzTqJEsUSYIhL8igfKzT09rrSkqo6yVmp3sJLaKLgbFHUNprdMYqxdMfY=",
+            "Body": "{\"Id\":\"f31a86a1-5adf-4b41-9df8-baf5e0e56725\",\"BrandId\":\"00000000-0000-0000-0000-000000000000\",\"BrandName\":\"\",\"ItemDefaultImageUrl\":\"https://staging-files.wdrbe.com/item-images/6c364917-f231-4b65-bd52-d898e9e7a370.webp\",\"ItemImageUrls\":[\"https://staging-files.wdrbe.com/item-images/6c364917-f231-4b65-bd52-d898e9e7a370.webp\"],\"Colours\":[\"burgundy\",\"dark gray\"],\"SizeId\":null,\"CreatedBy\":\"e6122294-2021-70b9-9fb3-755bc13c2a3e\",\"CreatedOn\":\"2026-03-19T00:11:20.6293388Z\"}",
+            "Md5OfBody": "3b953b7cd64c85337fd9dd90d84834df",
+            "Md5OfMessageAttributes": "efd01bbe20b26dfa84f862f390650e09",
+            "EventSourceArn": "arn:aws:sqs:eu-west-2:147997163791:marketplace-svc-default_queue",
+            "EventSource": "aws:sqs",
+            "AwsRegion": "eu-west-2",
+            "Attributes": {
+                "ApproximateReceiveCount": "1",
+                "AWSTraceHeader": "Root=1-69bb3116-368a8dc633a615a84fb2b35c;Parent=2a615d3cb39497b8;Sampled=0;Lineage=1:bded512c:0",
+                "SentTimestamp": "1773875480697",
+                "SenderId": "AROA3TYMO3BGNLW3RX6NH:AWS-CLOUDCAST",
+                "ApproximateFirstReceiveTimestamp": "1773875480702"
+            },
+            "MessageAttributes": {
+                "EventTopic": {
+                    "StringValue": "item_added",
+                    "BinaryValue": null,
+                    "StringListValues": [],
+                    "BinaryListValues": [],
+                    "DataType": "String"
+                },
+                "EventId": {
+                    "StringValue": "022ee2c0-b11c-48cc-81f0-b9e30216d987",
+                    "BinaryValue": null,
+                    "StringListValues": [],
+                    "BinaryListValues": [],
+                    "DataType": "String"
+                },
+                "EventVersion": {
+                    "StringValue": "1",
+                    "BinaryValue": null,
+                    "StringListValues": [],
+                    "BinaryListValues": [],
+                    "DataType": "String"
+                },
+                "HubClientVersion": {
+                    "StringValue": "4",
+                    "BinaryValue": null,
+                    "StringListValues": [],
+                    "BinaryListValues": [],
+                    "DataType": "String"
+                }
+            }
+        }
+    ]
+}

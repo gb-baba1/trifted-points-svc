@@ -3,14 +3,23 @@ using Kanject.Core.CacheDb.Provider.DynamoDb.Extensions;
 using Kanject.Core.NoSqlDatabase.Provider.DynamoDbV2.Extensions;
 using Kanject.Core.Queue.Provider.AwsSqs.Abstractions.Extensions;
 using Kanject.Identity.Provider.AwsCognito.Abstractions.Config;
+using Kanject.Identity.Provider.AwsCognitoV3;
 using Kanject.Identity.Provider.AwsCognitoV3.Extensions;
+using Kanject.InstantMessaging.Provider.AwsV2.User;
 using Kanject.ServerlessEventHub.Abstractions.Extensions;
 using Kanject.ServerlessEventHub.Provider.AwsSns.Abstractions.Config;
 using Kanject.ServerlessEventHub.Scheduling.EventBridge.Extensions;
 using Trifted.Core.Common.Configuration;
 using Trifted.Core.Trifted.Points.Events;
+using Trifted.Points.Business.Services.QuestEventSubscription;
+using Trifted.Points.Business.Services.QuestEventSubscription.Abstractions.Interfaces;
+using Trifted.Points.Business.Services.UserQuest;
+using Trifted.Points.Business.Services.UserQuest.Abstractions.Interfaces;
+using Trifted.Points.Business.Services.WdrbeQuest;
+using Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Interfaces;
 using Trifted.Points.Common.Constants;
 using Trifted.Points.Data.DbContexts;
+using Trifted.Points.Data.Repositories;
 using Trifted.Points.Tasks.Consumers;
 using Trifted.Points.Tasks.RouteConsumers.DefaultQueue;
 
@@ -32,8 +41,8 @@ public partial class Functions : CloudFunction
     /// region the Lambda function is executed in.
     /// </summary>
     //public Function() : base(CloudFunctionEnvironmentEnum.Production)
-    // public Functions() : base(CloudFunctionEnvironment.Staging)
-    public Functions() : base(CloudFunctionEnvironment.Development)
+     public Functions() : base(CloudFunctionEnvironment.Staging)
+    //public Functions() : base(CloudFunctionEnvironment.Development)
     {
     }
 #else
@@ -161,6 +170,11 @@ public partial class Functions : CloudFunction
             .AddPointsSvcDefaultQueueEventHubQueueRouter();
 
         #endregion
+        services.AddScoped<IUserQuestManagerService, UserQuestManagerService>();
+        services.AddScoped<IWdrbeQuestManagerService, WdrbeQuestManagerService>();
+        services.AddScoped<IQuestEventSubscriptionManagerService, QuestEventSubscriptionManagerService>();
+        services.AddScoped<WdrbeQuestRepository>();
+        services.RegisterDynamoDbRepository();
     }
 
     /// <summary>

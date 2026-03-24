@@ -10,7 +10,7 @@ using Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Constants;
 namespace Trifted.Points.Business.Services.QuestEventSubscription;
 
 public partial class QuestEventSubscriptionManagerService(
-    IServerlessEventHubDataStore serverlessEventHubDataStore, 
+    IServerlessEventHubDataStore serverlessEventHubDataStore,
     IQueueManagerService queueManagerService) : IQuestEventSubscriptionManagerService
 {
     public async Task SubscribeEventTopicToQuestQueue(List<QuestTaskSubscription> questTasks)
@@ -21,27 +21,39 @@ public partial class QuestEventSubscriptionManagerService(
                               questEventTopics))
                           ?? throw new ApiValidationException(WdrbeQuestManagerMessages.EventTopicNotFound);
 
-        if (eventTopics.Count() != questEventTopics.Length)
+        var foundEventTopicNames = eventTopics
+            .Select(x => x.Topic.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var notFoundEventTopics = questEventTopics
+            .Select(x => x.Trim())
+            .Where(topic => !foundEventTopicNames.Contains(topic))
+            .ToList();
+
+        if (notFoundEventTopics.Count > 0)
         {
-            var foundEventTopicNames = eventTopics.Select(topic => topic.Topic).ToHashSet();
-            var notFoundEventTopics = questEventTopics.Where(topic => !foundEventTopicNames.Contains(topic));
             throw new ApiValidationException(
-                WdrbeQuestManagerMessages.EventTopicNotFound.Replace("{{event-topic}}",
-                    string.Join(", ", notFoundEventTopics)));
+                WdrbeQuestManagerMessages.EventTopicNotFound.Replace(
+                    "{{event-topic}}",
+                    string.Join(", ", notFoundEventTopics)
+                )
+            );
         }
 
-        var topicLookup = eventTopics.ToDictionary(t => t.Topic);
+        var topicLookup = eventTopics.ToLookup(t => t.Topic, StringComparer.OrdinalIgnoreCase);
 
         foreach (var task in questTasks)
         {
-            if (!topicLookup.TryGetValue(task.EventTopic, out var topic))
+
+            var topics = topicLookup[task.EventTopic];
+
+            if (!topics.Any())
             {
                 throw new ApiValidationException(
                     WdrbeQuestManagerMessages.EventTopicNotFound
                         .Replace("{{event-topic}}", task.EventTopic));
             }
-
-            if (!topic.Parameters.Contains(task.UserIdentifier))
+            if (!topics.Any(t => t.Parameters.Contains(task.UserIdentifier)))
             {
                 throw new ApiValidationException(
                     WdrbeQuestManagerMessages.UserIdentifierNotFound

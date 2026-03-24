@@ -1,4 +1,6 @@
-﻿namespace Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Dtos
+﻿using Trifted.Points.Data.Enums;
+
+namespace Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Dtos
 {
     public class UserQuestTaskResponse
     {
@@ -7,5 +9,6 @@
         public int PointsEarned { get; set; }
         public decimal CompletionPercentage { get; set; }
         public bool IsCompleted { get; set; }
+        public AppFeature AppFeature { get; set; }
     }
 }

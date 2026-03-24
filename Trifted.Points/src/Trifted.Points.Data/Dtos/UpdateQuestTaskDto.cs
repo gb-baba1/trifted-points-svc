@@ -1,3 +1,5 @@
+using Trifted.Points.Data.Enums;
+
 namespace Trifted.Points.Data.Dtos;
 
 public class UpdateQuestTaskDto
@@ -54,4 +56,9 @@ public class UpdateQuestTaskDto
     /// This property is used to define LastUpdatedOn of the request.
     /// </summary>
     public string LastUpdatedOn { get; set; } = string.Empty;
+    /// <summary>
+    /// Gets or sets the AppFeature associated with the request.
+    /// This property is AppFeature of the request.
+    /// </summary>
+    public AppFeature AppFeature { get; set; }
 }

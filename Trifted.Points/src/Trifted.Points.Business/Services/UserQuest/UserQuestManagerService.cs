@@ -208,7 +208,8 @@ public partial class UserQuestManagerService(
                             TotalPoints = maxTaskPoints,
                             PointsEarned = taskPoints,
                             CompletionPercentage = completionPercentage,
-                            IsCompleted = userTask?.IsCompleted ?? false
+                            IsCompleted = userTask?.IsCompleted ?? false,
+                            AppFeature = task.AppFeature
                         };
                     })
                     .OrderBy(t => t.TaskName)
@@ -227,7 +228,8 @@ public partial class UserQuestManagerService(
                     Badge = pointsEarned >= quest.TotalPoints
                         ? quest.Badge
                         : Data.Enums.Badge.NoBadge,
-                    QuestTasks = taskResponses
+                    QuestTasks = taskResponses,
+                    IsActive = quest.IsActive
                 };
             }).ToList();
 

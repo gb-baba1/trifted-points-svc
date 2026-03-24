@@ -279,16 +279,6 @@ Using `UserRepository` as an example:
 4. To include it in the item collection, add `[IsCollectionItem]` to the `[EntityRepository]` attribute.
 5. Rebuild. The generator adds CRUD methods for the new entity on `UserRepository`.
 
-### Quick reference: all repositories in this assembly
-
-| Repository | Root Entity | Child Entities | Embedded Repos | Kanject Indexes | GSIs | Key Templates |
-| --- | --- | --- | --- | --- | --- | --- |
-| `UserPointRepository` | `UserPointEntity` | 0 | 0 | 0 | 0 | 4 |
-| `UserQuestRepository` | `UserQuestEntity` | 2 | 0 | 0 | 0 | 12 |
-| `UserQuestTaskRepository` | `UserQuestTaskEntity` | 1 | 0 | 0 | 0 | 8 |
-| `UserRepository` | `UserProfileEntity` | 3 | 0 | 0 | 0 | 14 |
-| `WdrbeQuestRepository` | `WdrbeQuestEntity` | 1 | 0 | 3 | 0 | 7 |
-
 ---
 
 ## Constraints & Invariants
@@ -299,16 +289,18 @@ Rules that must always hold. Violating these causes build errors, runtime failur
 | :---: | --- | --- | --- |
 | 1 | Every entity must implement `IDynamoDbEntity`. | Build error | Compiler + Analyzer (`KAN003`) |
 | 2 | Key template placeholders (`{PropertyName}`) must reference existing entity properties. | Build error | Analyzer (`KANJECT001`) |
-| 3 | `WithIndexAsync` and item collection mutation methods **must** be wrapped in `BeginTransaction()` … `CommitAsync()`. | Build warning | Analyzer (`KANJECT1001`, `KANJECT1002`) |
-| 4 | `UpdateWithIndexAsync` requires both the **current** and **previous** entity state. Omitting the previous entity leaves stale index records that return phantom results. | Data corruption | Developer responsibility — no compile-time check |
-| 5 | `BatchWriteItem` supports a maximum of **25 items** per call and **16 MB** total. The generated `InsertRangeAsync` / `RemoveRangeAsync` methods chunk automatically. | Runtime | Kanject library |
-| 6 | `TransactWriteItems` supports a maximum of **100 items** per transaction and **4 MB** total. Item collections with unbounded child lists may exceed this limit. | Runtime | DynamoDB — monitor `TransactionCanceledException` |
-| 7 | DynamoDB items must not exceed **400 KB**. Entities with many string or list properties should be profiled. | Runtime | DynamoDB |
-| 8 | A `[DynamoDbGsiAlias]` must reference a `[DynamoDbGsi]` defined on the same type or an ancestor type. | Build error | Analyzer (`KAN001`) |
-| 9 | Sharded key reads require scatter-gather across **all** shards. The Kanject library handles this automatically; direct DynamoDB queries must implement it manually or risk incomplete results. | Data incompleteness | Developer responsibility |
-| 10 | TTL deletions are asynchronous — expired items may appear in query results for up to **48 hours** after expiration. Always filter with `HasRecordExpired()` if strict freshness is required. | Stale reads | Developer responsibility |
-| 11 | GSI queries are **always eventually consistent**. Do not rely on GSI results immediately after a write. | Stale reads | DynamoDB design |
-| 12 | Each DynamoDB partition supports at most **3,000 RCU** and **1,000 WCU**. Entities with static or low-cardinality partition keys risk hitting this limit. | Throttling | DynamoDB |
+| 3 | On writable repositories, `WithIndexAsync` and item collection mutation methods **must** be wrapped in `BeginTransaction()` … `CommitAsync()`. | Build warning | Analyzer (`KANJECT1001`, `KANJECT1002`) |
+| 4 | On writable repositories, `UpdateWithIndexAsync` requires both the **current** and **previous** entity state. Omitting the previous entity leaves stale index records that return phantom results. | Data corruption | Developer responsibility — no compile-time check |
+| 5 | On writable repositories, `BatchWriteItem` supports a maximum of **25 items** per call and **16 MB** total. The generated `InsertRangeAsync` / `RemoveRangeAsync` methods chunk automatically. | Runtime | Kanject library |
+| 6 | On writable repositories, `TransactWriteItems` supports a maximum of **100 items** per transaction and **4 MB** total. Item collections with unbounded child lists may exceed this limit. | Runtime | DynamoDB — monitor `TransactionCanceledException` |
+| 8 | DynamoDB items must not exceed **400 KB**. Entities with many string or list properties should be profiled. | Runtime | DynamoDB |
+| 9 | A `[DynamoDbGsiAlias]` must reference a `[DynamoDbGsi]` defined on the same type or an ancestor type. | Build error | Analyzer (`KAN001`) |
+| 10 | Sharded key reads require scatter-gather across **all** shards. The Kanject library handles this automatically; direct DynamoDB queries must implement it manually or risk incomplete results. | Data incompleteness | Developer responsibility |
+| 11 | TTL deletions are asynchronous — expired items may appear in query results for up to **48 hours** after expiration. Always filter with `HasRecordExpired()` if strict freshness is required. | Stale reads | Developer responsibility |
+| 12 | GSI queries are **always eventually consistent**. Do not rely on GSI results immediately after a write. | Stale reads | DynamoDB design |
+| 13 | Each DynamoDB partition supports at most **3,000 RCU** and **1,000 WCU**. Entities with static or low-cardinality partition keys risk hitting this limit. | Throttling | DynamoDB |
+| 14 | `[KeyTemplate]` on a DynamoDB key property must start with meaningful static text before the first `{placeholder}`. A template like `"{WindowKey}#Header"` produces an empty prefix in generated `begins_with` queries, matching **all** records instead of the intended subset. Prefix-only delimiters (e.g., `"#"`) are also rejected. | Build error | Analyzer (`KANJECT004`) + Generator (`KANJECTGEN004`) |
+| 15 | Each entity in an item collection must have a **unique sort key template**. If two entities share both the same hash key and sort key template, writes silently overwrite each other causing data corruption. | Build error | Generator (`KANJECTGEN005`) |
 
 ---
 
@@ -321,12 +313,15 @@ Rules that must always hold. Violating these causes build errors, runtime failur
 | ✅ | Use the generated `Find*Async` methods for queries | Write raw DynamoDB `QueryRequest` calls — you lose key composition, pagination, and scatter-gather |
 | ✅ | Use `GetItemCollectionAsync` to fetch related entities in one call | Issue separate `GetItem` calls for each entity in an item collection |
 | ✅ | Let the generator compose keys via `Apply{Entity}KeyTemplates` or `Compose*` methods | Manually construct key strings — drift causes key mismatches and missing data |
+| ✅ | Pass entities directly to `InsertAsync` / `UpdateAsync` / `*WithIndexAsync` — they apply key templates automatically | Call `Apply{Entity}KeyTemplates()` before write methods — the repository already applies them internally |
 | ✅ | Use `QueryConfigOption` fluent methods for filters and projections | Build raw `FilterExpression` strings — error-prone and not type-safe |
 | ✅ | Use `isConsistentRead = false` for read-heavy, latency-tolerant paths | Default to strongly consistent reads everywhere — it doubles RCU cost |
 | ✅ | Add `[Unique]` / `[CompositeUnique]` for uniqueness constraints | Check uniqueness via `Scan` — full table scan, expensive and slow |
 | ✅ | Wrap transactional writes in `BeginTransaction()` … `CommitAsync()` | Call transactional methods outside a transaction — the analyzer flags this |
 | ✅ | Use `[SearchableIndex]` for text-based lookups | Implement client-side string matching on full scans |
 | ✅ | Edit entity classes and attributes, then rebuild | Edit `.g.cs` files directly — they are overwritten every build |
+| ✅ | Start `[KeyTemplate]` with a static prefix: `"Header#{WindowKey}"` | Start with a placeholder: `"{WindowKey}#Header"` — generates empty `begins_with` queries (`KANJECT004` / `KANJECTGEN004`) |
+| ✅ | Give each entity in an item collection a **unique sort key template** | Reuse the same SK template across entities — silent data overwrites (`KANJECTGEN005`) |
 
 ---
 
@@ -433,6 +428,8 @@ Task AddLifeTimeSupport()
 // [Query] Retrieve User Point entities — paginated at 1 MB per page
 Task<IList<UserPointEntity>> GetAllAsync(Action<QueryConfig>? config = null)
 
+// ⚠️ All write methods below automatically apply key templates — do not call Apply*KeyTemplates() before these.
+
 // [PutItem] Insert a new User Point into the table
 Task InsertAsync(UserPointEntity entity)
 
@@ -478,6 +475,10 @@ Task<IList<UserPointEntity>> FindUserPointsAsync(System.Guid[] userIds, bool isC
 | `SortKey` | `UserProfile#Users#{UserId}` | `SortKey` | Yes | No |
 | `Gsi1Pk` | `QuestPosts` | `Gsi1Pk` | No | No |
 | `Gsi1Sk` | `Points#{Points}#{UserId}#{Id}` | `Gsi1Sk` | No | No |
+
+> **⚠️ Auto-applied during writes:** `InsertAsync`, `UpdateAsync`, `AddOrUpdateAsync`, their batch equivalents, and all `*WithIndexAsync` methods **automatically apply key templates** to the entity before persisting. 
+> Do **not** manually call `ApplyUserPointKeyTemplates()` or individual `Compose*` methods before write operations — the repository handles key composition internally. 
+> These methods are intended for **read** scenarios where you need to compose key values for queries (e.g., parameters to `Find*Async`).
 
 <details>
 <summary>View Key Template Methods</summary>
@@ -604,6 +605,8 @@ For each entity property the following extension methods are generated on `Query
 // [Query] Retrieve User Quest entities — paginated at 1 MB per page
 Task<IList<UserQuestEntity>> GetAllAsync(Action<QueryConfig>? config = null)
 
+// ⚠️ All write methods below automatically apply key templates — do not call Apply*KeyTemplates() before these.
+
 // [PutItem] Insert a new User Quest into the table
 Task InsertAsync(UserQuestEntity entity)
 
@@ -657,6 +660,10 @@ Task<IList<UserQuestEntity>> FindUserQuestsAsync(System.Guid[] userIds, bool isC
 | `SortKey` | `Quests#{QuestId}` | `SortKey` | Yes | No |
 | `Gsi1Pk` | `UserQuests` | `Gsi1Pk` | No | No |
 | `Gsi1Sk` | `Quests#{QuestId}#{Points}#{Id}` | `Gsi1Sk` | No | No |
+
+> **⚠️ Auto-applied during writes:** `InsertAsync`, `UpdateAsync`, `AddOrUpdateAsync`, their batch equivalents, and all `*WithIndexAsync` methods **automatically apply key templates** to the entity before persisting. 
+> Do **not** manually call `ApplyUserQuestKeyTemplates()` or individual `Compose*` methods before write operations — the repository handles key composition internally. 
+> These methods are intended for **read** scenarios where you need to compose key values for queries (e.g., parameters to `Find*Async`).
 
 <details>
 <summary>View Key Template Methods</summary>
@@ -943,6 +950,8 @@ public static partial class UserQuestItemCollectionBuilder;
 // [Query] Retrieve User Quest Task entities — paginated at 1 MB per page
 Task<IList<UserQuestTaskEntity>> GetAllAsync(Action<QueryConfig>? config = null)
 
+// ⚠️ All write methods below automatically apply key templates — do not call Apply*KeyTemplates() before these.
+
 // [PutItem] Insert a new User Quest Task into the table
 Task InsertAsync(UserQuestTaskEntity entity)
 
@@ -992,6 +1001,10 @@ Task<IList<UserQuestTaskEntity>> FindUserQuestTasksAsync(System.Guid[] userIds, 
 | `SortKey` | `QuestTasks#{QuestId}#{TaskId}` | `SortKey` | Yes | No |
 | `Gsi1Pk` | `UserQuestTasks` | `Gsi1Pk` | No | No |
 | `Gsi1Sk` | `QuestTasks#{QuestId}#{TaskId}#{Points}#{Id}` | `Gsi1Sk` | No | No |
+
+> **⚠️ Auto-applied during writes:** `InsertAsync`, `UpdateAsync`, `AddOrUpdateAsync`, their batch equivalents, and all `*WithIndexAsync` methods **automatically apply key templates** to the entity before persisting. 
+> Do **not** manually call `ApplyUserQuestTaskKeyTemplates()` or individual `Compose*` methods before write operations — the repository handles key composition internally. 
+> These methods are intended for **read** scenarios where you need to compose key values for queries (e.g., parameters to `Find*Async`).
 
 <details>
 <summary>View Key Template Methods</summary>
@@ -1238,6 +1251,8 @@ public static partial class UserQuestTaskItemCollectionBuilder;
 // [Query] Retrieve User Profile entities — paginated at 1 MB per page
 Task<IList<UserProfileEntity>> GetAllAsync(Action<QueryConfig>? config = null)
 
+// ⚠️ All write methods below automatically apply key templates — do not call Apply*KeyTemplates() before these.
+
 // [PutItem] Insert a new User Profile into the table
 Task InsertAsync(UserProfileEntity entity)
 
@@ -1287,6 +1302,10 @@ Task<IList<UserProfileEntity>> FindUserProfilesAsync(System.Guid[] userIds, bool
 | `Gsi1Sk` | `QuestTasks#{QuestId}#{TaskId}#{Points}#{Id}` | `Gsi1Sk` | No | No |
 | `PartitionKey` | `TriftedUserEntity#{UserId}` | `PartitionKey` | Yes | No |
 | `SortKey` | `Info` | `SortKey` | Yes | No |
+
+> **⚠️ Auto-applied during writes:** `InsertAsync`, `UpdateAsync`, `AddOrUpdateAsync`, their batch equivalents, and all `*WithIndexAsync` methods **automatically apply key templates** to the entity before persisting. 
+> Do **not** manually call `ApplyUserProfileKeyTemplates()` or individual `Compose*` methods before write operations — the repository handles key composition internally. 
+> These methods are intended for **read** scenarios where you need to compose key values for queries (e.g., parameters to `Find*Async`).
 
 <details>
 <summary>View Key Template Methods</summary>
@@ -1590,6 +1609,8 @@ public static partial class UserProfileItemCollectionBuilder;
 // [Query] Retrieve Wdrbe Quest entities — paginated at 1 MB per page
 Task<IList<WdrbeQuestEntity>> GetAllAsync(Action<QueryConfig>? config = null)
 
+// ⚠️ All write methods below automatically apply key templates — do not call Apply*KeyTemplates() before these.
+
 // [PutItem] Insert a new Wdrbe Quest into the table
 Task InsertAsync(WdrbeQuestEntity entity)
 
@@ -1627,6 +1648,8 @@ Task<IList<WdrbeQuestEntity>> FindWdrbeQuestsAsync(System.Guid[] ids, bool isCon
 
 // ── Index-Aware Mutations (TransactWriteItems) ──
 
+// ⚠️ All WithIndexAsync methods below also automatically apply key templates — do not call Apply*KeyTemplates() before these.
+
 // [TransactWriteItems] Insert entity + all auto-apply Kanject Index records
 Task InsertWithIndexAsync<TEntity>(TEntity entity) where TEntity : WdrbeQuestEntity
 
@@ -1661,6 +1684,10 @@ Task RemoveRangeWithIndexAsync<TEntity>(IList<TEntity> entities) where TEntity :
 | `SortKey` | `Info` | `SortKey` | Yes | No |
 | `Gsi1Pk` | `WdrbeQuests` | `Gsi1Pk` | No | No |
 | `Gsi1Sk` | `WdrbeQuestInfo#{CountryId}#{CreatedOn}#{Id}` | `Gsi1Sk` | No | No |
+
+> **⚠️ Auto-applied during writes:** `InsertAsync`, `UpdateAsync`, `AddOrUpdateAsync`, their batch equivalents, and all `*WithIndexAsync` methods **automatically apply key templates** to the entity before persisting. 
+> Do **not** manually call `ApplyWdrbeQuestKeyTemplates()` or individual `Compose*` methods before write operations — the repository handles key composition internally. 
+> These methods are intended for **read** scenarios where you need to compose key values for queries (e.g., parameters to `Find*Async`).
 
 <details>
 <summary>View Key Template Methods</summary>
@@ -2287,21 +2314,23 @@ QueryConfig AddGsi2IndexRangeKeyExpression(this QueryConfig queryConfig, (QueryO
 > Every `PutItem` to the base table can trigger additional writes to GSIs and Kanject Indexes.
 > This section quantifies the **write amplification factor** (WAF) — the total number of
 > physical DynamoDB writes caused by a single logical write. A WAF > 3 deserves scrutiny.
+> `[SearchFilter]` projections are stored on existing index records — they add bytes but **no additional DynamoDB writes**.
+> Auto-apply `NodeRelationship` edges are included below: fixed single-value edge writes are counted directly, while collection-valued edge writes are shown as `+N` because they scale with the number of target IDs on the entity.
 
-| Entity | Base Write | Auto-Apply Indexes | GSIs | Total WAF | Risk |
-| --- | :---: | :---: | :---: | :---: | --- |
-| `UserPointEntity` | 1 | 0 | 0 | **1** | ✅ Low |
-| `UserQuestEntity` | 1 | 0 | 0 | **1** | ✅ Low |
-| ↳ `UserPointEntity` | 1 | 0 | 0 | **1** | ✅ Low |
-| ↳ `UserQuestTaskEntity` | 1 | 0 | 0 | **1** | ✅ Low |
-| `UserQuestTaskEntity` | 1 | 0 | 0 | **1** | ✅ Low |
-| ↳ `UserQuestEntity` | 1 | 0 | 0 | **1** | ✅ Low |
-| `UserProfileEntity` | 1 | 0 | 0 | **1** | ✅ Low |
-| ↳ `UserPointEntity` | 1 | 0 | 0 | **1** | ✅ Low |
-| ↳ `UserQuestEntity` | 1 | 0 | 0 | **1** | ✅ Low |
-| ↳ `UserQuestTaskEntity` | 1 | 0 | 0 | **1** | ✅ Low |
-| `WdrbeQuestEntity` | 1 | 3 | 0 | **4** | ⚠️ Moderate |
-| ↳ `WdrbeQuestTaskEntity` | 1 | 2 | 0 | **3** | ⚠️ Moderate |
+| Entity | Base Write | Auto-Apply Indexes | GSIs | Auto-Apply NodeRelationships | Total WAF | Risk |
+| --- | :---: | :---: | :---: | :---: | :---: | --- |
+| `UserPointEntity` | 1 | 0 | 0 | — | **1** | ✅ Low |
+| `UserQuestEntity` | 1 | 0 | 0 | — | **1** | ✅ Low |
+| ↳ `UserPointEntity` | 1 | 0 | 0 | — | **1** | ✅ Low |
+| ↳ `UserQuestTaskEntity` | 1 | 0 | 0 | — | **1** | ✅ Low |
+| `UserQuestTaskEntity` | 1 | 0 | 0 | — | **1** | ✅ Low |
+| ↳ `UserQuestEntity` | 1 | 0 | 0 | — | **1** | ✅ Low |
+| `UserProfileEntity` | 1 | 0 | 0 | — | **1** | ✅ Low |
+| ↳ `UserPointEntity` | 1 | 0 | 0 | — | **1** | ✅ Low |
+| ↳ `UserQuestEntity` | 1 | 0 | 0 | — | **1** | ✅ Low |
+| ↳ `UserQuestTaskEntity` | 1 | 0 | 0 | — | **1** | ✅ Low |
+| `WdrbeQuestEntity` | 1 | 3 | 0 | — | **4** | ⚠️ Moderate |
+| ↳ `WdrbeQuestTaskEntity` | 1 | 2 | 0 | — | **3** | ⚠️ Moderate |
 
 ### Item Collection Transaction Cost
 
@@ -2332,21 +2361,22 @@ DynamoDB uses `TransactWriteItems` internally. Each transaction is limited to **
 > **Note:** The Kanject library already implements scatter-gather, two-phase index lookups, and GSI
 > read-back internally. These costs are informational and only become a manual concern if you
 > issue DynamoDB queries directly without the generated repository methods.
+> NodeRelationship traversals are also covered below. Outbound and inbound relationship queries are modeled as edge-record queries followed by entity fetches.
 
-| Entity | Single Get | Sharded Find (scatter-gather) | Index Lookup (2-phase) | GSI Query | Collection Query | Worst-Case RAF | Risk |
-| --- | :---: | :---: | :---: | :---: | :---: | :---: | --- |
-| `UserPointEntity` | 1 | — | — | — | — | **1** | ✅ Low |
-| `UserQuestEntity` | 1 | — | — | — | 1 query → 1 + N items | **13** | 🔴 High — cache, denormalize, or reduce shard count |
-| ↳ `UserPointEntity` | 1 | — | — | — | **1** | ✅ Low |
-| ↳ `UserQuestTaskEntity` | 1 | — | — | — | **1** | ✅ Low |
-| `UserQuestTaskEntity` | 1 | — | — | — | 1 query → 2 items | **2** | ✅ Low |
-| ↳ `UserQuestEntity` | 1 | — | — | — | **1** | ✅ Low |
-| `UserProfileEntity` | 1 | — | — | — | 1 query → 1 + N items | **14** | 🔴 High — cache, denormalize, or reduce shard count |
-| ↳ `UserPointEntity` | 1 | — | — | — | **1** | ✅ Low |
-| ↳ `UserQuestEntity` | 1 | — | — | — | **1** | ✅ Low |
-| ↳ `UserQuestTaskEntity` | 1 | — | — | — | **1** | ✅ Low |
-| `WdrbeQuestEntity` | 1 | — | 2 (index query + base table fetch) | — | 1 query → 1 + N items | **12** | 🔴 High — cache, denormalize, or reduce shard count |
-| ↳ `WdrbeQuestTaskEntity` | 1 | — | 2 (index + fetch) | — | **2** | ✅ Low |
+| Entity | Single Get | Sharded Find (scatter-gather) | Index Lookup (2-phase) | GSI Query | NodeRelationship Traversal | Collection Query | Worst-Case RAF | Risk |
+| --- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | --- |
+| `UserPointEntity` | 1 | — | — | — | — | — | **1** | ✅ Low |
+| `UserQuestEntity` | 1 | — | — | — | — | 1 query → 1 + N items | **13** | 🔴 High — cache, denormalize, or reduce shard count |
+| ↳ `UserPointEntity` | 1 | — | — | — | — | **1** | ✅ Low |
+| ↳ `UserQuestTaskEntity` | 1 | — | — | — | — | **1** | ✅ Low |
+| `UserQuestTaskEntity` | 1 | — | — | — | — | 1 query → 2 items | **2** | ✅ Low |
+| ↳ `UserQuestEntity` | 1 | — | — | — | — | **1** | ✅ Low |
+| `UserProfileEntity` | 1 | — | — | — | — | 1 query → 1 + N items | **14** | 🔴 High — cache, denormalize, or reduce shard count |
+| ↳ `UserPointEntity` | 1 | — | — | — | — | **1** | ✅ Low |
+| ↳ `UserQuestEntity` | 1 | — | — | — | — | **1** | ✅ Low |
+| ↳ `UserQuestTaskEntity` | 1 | — | — | — | — | **1** | ✅ Low |
+| `WdrbeQuestEntity` | 1 | — | 2 (index query + base table fetch) | — | — | 1 query → 1 + N items | **12** | 🔴 High — cache, denormalize, or reduce shard count |
+| ↳ `WdrbeQuestTaskEntity` | 1 | — | 2 (index + fetch) | — | — | **2** | ✅ Low |
 
 ### Consistency Mode Cost Impact
 
@@ -2439,40 +2469,50 @@ DynamoDB uses `TransactWriteItems` internally. Each transaction is limited to **
 <details>
 <summary>View adjacency list pattern details</summary>
 
-> The **adjacency list pattern** is the foundation of single-table design. Entities that share a
-> partition key form a natural graph — the root entity is the "node" and child entities represent
-> "edges" to related data. A single `Query` on the partition key retrieves the entire subgraph.
+> The **adjacency list pattern** here refers to **partition-local item collections** in the single-table model.
+> Entities that share a partition key can be loaded together with a single `Query`, with the root item
+> acting as the collection anchor and child entities representing related records inside that partition.
+> This section documents **item collections** created via repository/entity-repository modeling, not
+> explicit `[NodeRelationship]` edge records. Those are documented separately in the **Node Relationships** section.
 
 ### `UserQuest` Subgraph
 
+> This subgraph is a partition-local item collection rooted at `UserQuestEntity`, not a generated NodeRelationship edge graph.
+
 | Entity | Role | Sort Key Pattern | Cardinality |
 | --- | --- | --- | --- |
-| `UserQuestEntity` | **Node (root)** | `Quests#{QuestId}` | 1 |
-| `UserPointEntity` | Edge | `UserProfile#Users#{UserId}` | 0..1 |
-| `UserQuestTaskEntity` | Edge | `QuestTasks#{QuestId}#{TaskId}` | 0..N |
+| `UserQuestEntity` | **Collection root** | `Quests#{QuestId}` | 1 |
+| `UserPointEntity` | Collection member | `UserProfile#Users#{UserId}` | 0..1 |
+| `UserQuestTaskEntity` | Collection member | `QuestTasks#{QuestId}#{TaskId}` | 0..N |
 
 ### `UserQuestTask` Subgraph
 
+> This subgraph is a partition-local item collection rooted at `UserQuestTaskEntity`, not a generated NodeRelationship edge graph.
+
 | Entity | Role | Sort Key Pattern | Cardinality |
 | --- | --- | --- | --- |
-| `UserQuestTaskEntity` | **Node (root)** | `QuestTasks#{QuestId}#{TaskId}` | 1 |
-| `UserQuestEntity` | Edge | `Quests#{QuestId}` | 0..1 |
+| `UserQuestTaskEntity` | **Collection root** | `QuestTasks#{QuestId}#{TaskId}` | 1 |
+| `UserQuestEntity` | Collection member | `Quests#{QuestId}` | 0..1 |
 
 ### `UserProfile` Subgraph
 
+> This subgraph is a partition-local item collection rooted at `UserProfileEntity`, not a generated NodeRelationship edge graph.
+
 | Entity | Role | Sort Key Pattern | Cardinality |
 | --- | --- | --- | --- |
-| `UserProfileEntity` | **Node (root)** | `Info` | 1 |
-| `UserPointEntity` | Edge | `UserProfile#Users#{UserId}` | 0..1 |
-| `UserQuestEntity` | Edge | `Quests#{QuestId}` | 0..N |
-| `UserQuestTaskEntity` | Edge | `QuestTasks#{QuestId}#{TaskId}` | 0..N |
+| `UserProfileEntity` | **Collection root** | `Info` | 1 |
+| `UserPointEntity` | Collection member | `UserProfile#Users#{UserId}` | 0..1 |
+| `UserQuestEntity` | Collection member | `Quests#{QuestId}` | 0..N |
+| `UserQuestTaskEntity` | Collection member | `QuestTasks#{QuestId}#{TaskId}` | 0..N |
 
 ### `WdrbeQuest` Subgraph
 
+> This subgraph is a partition-local item collection rooted at `WdrbeQuestEntity`, not a generated NodeRelationship edge graph.
+
 | Entity | Role | Sort Key Pattern | Cardinality |
 | --- | --- | --- | --- |
-| `WdrbeQuestEntity` | **Node (root)** | `Info` | 1 |
-| `WdrbeQuestTaskEntity` | Edge | `Tasks#{Id}` | 0..N |
+| `WdrbeQuestEntity` | **Collection root** | `Info` | 1 |
+| `WdrbeQuestTaskEntity` | Collection member | `Tasks#{Id}` | 0..N |
 
 </details>
 
@@ -2982,6 +3022,11 @@ Treat **Error**-level rules as hard blockers — build will fail. **Warning** an
 | `KAN004` | Info | Modernization | Prefer generic `EntityRepository<T>()` over `EntityRepository(typeof(T))` | Replace `EntityRepository(typeof(Foo))` with `EntityRepository<List<Foo>>()` |
 | `KAN005` | Info | Modernization | Prefer generic `EmbedRepository<T>()` over `EmbedRepository(typeof(T))` | Replace `EmbedRepository(typeof(Foo))` with `EmbedRepository<Foo>()` |
 | `KAN006` | Error | Design | Array types (`T[]`) not supported in `EntityRepositoryAttribute<T>` | Use `List<T>` instead of `T[]` |
+| `KAN010` | Error | Design | Source entity using `[NodeRelationship]` must define a `[NodeDefinition]` property | Add `[NodeDefinition("label")]` to the source identity property |
+| `KAN011` | Error | Design | Target entity referenced by `[NodeRelationship]` must define a `[NodeDefinition]` property | Add `[NodeDefinition("label")]` to the target identity property |
+| `KAN012` | Warning | Design | Bidirectional `[NodeRelationship]` should specify `InverseType` explicitly | Set `InverseType = "INVERSE_LABEL"` to make reverse traversal semantics clear |
+| `KAN013` | Error | Design | `TraversalStrategy = Gsi` requires `[DynamoDbGsi]` on the source entity | Add a GSI to the entity or change the traversal strategy |
+| `KAN014` | Error | Design | Duplicate `[NodeRelationship]` declarations for the same target + edge type on one property | Remove the duplicate relationship declaration |
 | `KANJECT001` | Error | Usage | Key template placeholder `{Prop}` references a non-existent property | Fix the property name — the analyzer suggests similarly named alternatives |
 | `KANJECT002` | Info | Information | Valid template placeholder confirmation | Informational only — no action required |
 | `KANJECT003` | Warning | Usage | Empty `{}` placeholder in key template | Add a property name inside the braces or use `{{` / `}}` for literal braces |
@@ -3055,4 +3100,4 @@ The following attributes support `{PropertyName}` template interpolation:
 
 ---
 
-*Made with ❤️ from the Kanject Team — Generated on 2026-03-18 at 17:41:54 UTC (in 0.39s)*
+*Made with ❤️ from the Kanject Team — Generated on 2026-03-24 at 13:45:07 UTC (in 0.40s)*

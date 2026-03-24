@@ -25,7 +25,7 @@
         <DocumentationFile>.\Trifted.Points.Api.xml</DocumentationFile>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Kanject.Identity.Annotations" Version="1.0.6" />
+        <PackageReference Include="Kanject.Identity.Annotations" Version="1.0.7" />
         <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.5" />
         <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.1.5" />
         <PackageReference Include="Amazon.Lambda.AspNetCoreServer" Version="9.2.1" />

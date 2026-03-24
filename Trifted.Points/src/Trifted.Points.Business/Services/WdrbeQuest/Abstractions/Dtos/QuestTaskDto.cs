@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Trifted.Points.Data.Enums;
 
 namespace Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Dtos;
 
@@ -36,4 +37,9 @@ public class QuestTaskDto
     /// </summary>
     [Required]
     public string UserIdentifier { get; set; } = string.Empty;
+    /// <summary>
+    /// Gets or sets the AppFeature associated with the user.
+    /// This identifier is AppFeature within the system.
+    /// </summary>
+    public AppFeature AppFeature { get; set; }
 }

@@ -1,4 +1,6 @@
-﻿namespace Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Models;
+﻿using Trifted.Points.Data.Enums;
+
+namespace Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Models;
 
 public class GetWdrbeQuestTasksResonse
 {
@@ -59,4 +61,9 @@ public class GetWdrbeQuestTasksResonse
     /// This property is used to define LastUpdatedOn of the request.
     /// </summary>
     public string LastUpdatedOn { get; set; } = string.Empty;
+    /// <summary>
+    /// Gets or sets the AppFeature associated with the request.
+    /// This property is used to define AppFeature of the request.
+    /// </summary>
+    public AppFeature AppFeature { get; set; }
 }

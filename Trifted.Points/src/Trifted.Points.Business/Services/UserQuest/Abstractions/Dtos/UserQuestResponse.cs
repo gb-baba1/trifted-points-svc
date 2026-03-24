@@ -12,6 +12,7 @@ namespace Trifted.Points.Business.Services.UserQuest.Abstractions.Dtos
         public int CompletionPercentage { get; set; }
         public Badge Badge { get; set; }
         public bool IsCompleted { get; set; }
+        public bool IsActive { get; set; }
         public List<UserQuestTaskResponse>? QuestTasks { get; set; }
     }
 }

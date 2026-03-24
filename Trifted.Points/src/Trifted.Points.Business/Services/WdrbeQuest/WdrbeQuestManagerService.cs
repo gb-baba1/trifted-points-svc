@@ -32,6 +32,29 @@ public partial class WdrbeQuestManagerService(
             if (request is null)
                 throw new ApiValidationException(WdrbeQuestManagerMessages.ModelIsRequired);
 
+            var eventTopics = request.Tasks
+                .Select(t => t.EventTopic.Trim())
+                .Where(t => !string.IsNullOrWhiteSpace(t))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            var existingEvents = await Repository.WdrbeQuestTasks.FindWdrbeQuestTasksAsync(eventTopic: eventTopics);
+
+            if (existingEvents.Any())
+            {
+                var existingEventTopics = existingEvents
+                    .Select(e => e.EventTopic)
+                    .Distinct(StringComparer.OrdinalIgnoreCase);
+
+                throw new ApiValidationException(
+                    WdrbeQuestManagerMessages.EventTopicAlreadyCreated.Replace(
+                        "{{event-topic}}",
+                        string.Join(", ", existingEventTopics)
+                    )
+                );
+            }
+
+
             await questEventSubscriptionManager.SubscribeEventTopicToQuestQueue(
                 [.. request.Tasks.Select(t => new QuestTaskSubscription
                     {
@@ -59,7 +82,7 @@ public partial class WdrbeQuestManagerService(
         var questName = request.QuestName.StripFormat();
 
         if (!await Repository.IsWdrbeQuestQuestNameUniqueAsync(name: questName))
-            throw new ApiValidationException(WdrbeQuestManagerMessages.EventTopicAlreadyCreated);
+            throw new ApiValidationException(WdrbeQuestManagerMessages.QuestHasBeenCreated);
 
         int questPoint = request.Tasks.Sum(task => task.PointPerAction * task.MaxAction);
         var currentDateTimeAsString = CurrentDateTimeAsString;
@@ -100,7 +123,8 @@ public partial class WdrbeQuestManagerService(
                         Points = totalPoints,
                         UserIdentifier = task.UserIdentifier,
                         CreatedOn = currentDateTimeAsString,
-                        LastUpdatedOn = currentDateTimeAsString
+                        LastUpdatedOn = currentDateTimeAsString,
+                        AppFeature = task.AppFeature
                     };
                 })
                 .OrderBy(x => x.Name)]
@@ -139,7 +163,8 @@ public partial class WdrbeQuestManagerService(
                     PointPerAction = task.PointPerAction,
                     CountryId = task.CountryId,
                     LastUpdatedOn = task.LastUpdatedOn,
-                    Points = (task.MaxAction * task.PointPerAction)
+                    Points = (task.MaxAction * task.PointPerAction),
+                    AppFeature = task.AppFeature
                 };
         }
         catch (Exception ex) when (ex is not ApiServiceException)
@@ -218,7 +243,8 @@ public partial class WdrbeQuestManagerService(
                     UserIdentifier = t.UserIdentifier,
                     Points = t.PointPerAction * t.MaxAction,
                     CreatedOn = existing?.CreatedOn ?? now,
-                    LastUpdatedOn = now
+                    LastUpdatedOn = now,
+                    AppFeature = t.AppFeature
                 };
             }).ToList();
 

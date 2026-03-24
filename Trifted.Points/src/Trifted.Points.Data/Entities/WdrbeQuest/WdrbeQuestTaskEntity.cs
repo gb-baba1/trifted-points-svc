@@ -46,5 +46,6 @@ public record WdrbeQuestTaskEntity : AbstractBaseEntity
     [DynamoDBProperty] public int Points { get; set; }
     [DynamoDBProperty] public string UserIdentifier { get; set; } = string.Empty;
     [DynamoDBProperty]  public string LastUpdatedOn { get; set; } = string.Empty;
+    [DynamoDBProperty]  public AppFeature AppFeature { get; set; }
     [DynamoDBProperty("Et")] public override EntityType EntityType { get; set; } = EntityType.WdrbeQuestTask;
 }

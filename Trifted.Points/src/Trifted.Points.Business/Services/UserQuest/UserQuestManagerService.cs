@@ -138,6 +138,7 @@ public partial class UserQuestManagerService(
             throw new ApiServiceException(UserQuestManagerMessages.SystemCouldNotProcessUserQuest, ex);
         }
     }
+
     public async Task<UserPointResponse> GetUsersQuestPointAsync(Guid userId)
     {
         try
@@ -175,63 +176,69 @@ public partial class UserQuestManagerService(
                     g => g.ToDictionary(t => t.TaskId, t => t)
                 );
 
+            // IMPORTANT: Total points includes ACTIVE + INACTIVE quests
             var totalUserPoints = userQuests.Sum(q => q.Points);
 
-            var questResponses = allQuests.Select(quest =>
-            {
-                var pointsEarned = userQuestLookup.TryGetValue(quest.QuestId, out var userQuest)
-                    ? userQuest.Points
-                    : 0;
-
-                var questTasks = tasksByQuestId.TryGetValue(quest.QuestId, out var tasks)
-                    ? tasks
-                    : [];
-
-                var userTasksForQuest = userTasksByQuestAndTask.TryGetValue(quest.QuestId, out var userTaskDict)
-                    ? userTaskDict
-                    : [];
-
-                var taskResponses = questTasks
-                    .Select(task =>
-                    {
-                        var userTask = userTasksForQuest.TryGetValue(task.TaskId, out var ut) ? ut : null;
-
-                        var taskPoints = userTask?.Points ?? 0;
-                        var maxTaskPoints = task.PointPerAction * task.MaxAction;
-                        var completionPercentage = maxTaskPoints == 0
-                            ? 0
-                            : Math.Round((decimal)taskPoints / maxTaskPoints * 100, 2);
-
-                        return new UserQuestTaskResponse
-                        {
-                            TaskName = task.TaskName,
-                            TotalPoints = maxTaskPoints,
-                            PointsEarned = taskPoints,
-                            CompletionPercentage = completionPercentage,
-                            IsCompleted = userTask?.IsCompleted ?? false,
-                            AppFeature = task.AppFeature
-                        };
-                    })
-                    .OrderBy(t => t.TaskName)
-                    .ToList();
-
-                return new UserQuestResponse
+            // Only return ACTIVE quests
+            var questResponses = allQuests
+                .Where(q => q.IsActive)
+                .Select(quest =>
                 {
-                    QuestName = quest.QuestName,
-                    QuestDescription = quest.QuestDescription,
-                    TotalPoints = quest.TotalPoints,
-                    PointsEarned = pointsEarned,
-                    CompletionPercentage = quest.TotalPoints == 0
-                        ? 0
-                        : (int)((double)pointsEarned / quest.TotalPoints * 100),
-                    IsCompleted = pointsEarned >= quest.TotalPoints,
-                    Badge = pointsEarned >= quest.TotalPoints
-                        ? quest.Badge
-                        : Data.Enums.Badge.NoBadge,
-                    QuestTasks = taskResponses,
-                    IsActive = quest.IsActive
-                };
-            }).ToList();
+                    var pointsEarned = userQuestLookup.TryGetValue(quest.QuestId, out var userQuest)
+                        ? userQuest.Points
+                        : 0;
+
+                    var questTasks = tasksByQuestId.TryGetValue(quest.QuestId, out var tasks)
+                        ? tasks
+                        : [];
+
+                    var userTasksForQuest = userTasksByQuestAndTask.TryGetValue(quest.QuestId, out var userTaskDict)
+                        ? userTaskDict
+                        : [];
+
+                    var taskResponses = questTasks
+                        .Select(task =>
+                        {
+                            var userTask = userTasksForQuest.TryGetValue(task.TaskId, out var ut) ? ut : null;
+
+                            var taskPoints = userTask?.Points ?? 0;
+                            var maxTaskPoints = task.PointPerAction * task.MaxAction;
+
+                            var completionPercentage = maxTaskPoints == 0
+                                ? 0
+                                : Math.Round((decimal)taskPoints / maxTaskPoints * 100, 2);
+
+                            return new UserQuestTaskResponse
+                            {
+                                TaskName = task.TaskName,
+                                TotalPoints = maxTaskPoints,
+                                PointsEarned = taskPoints,
+                                CompletionPercentage = completionPercentage,
+                                IsCompleted = userTask?.IsCompleted ?? false,
+                                AppFeature = task.AppFeature
+                            };
+                        })
+                        .OrderBy(t => t.TaskName)
+                        .ToList();
+
+                    return new UserQuestResponse
+                    {
+                        QuestName = quest.QuestName,
+                        QuestDescription = quest.QuestDescription,
+                        TotalPoints = quest.TotalPoints,
+                        PointsEarned = pointsEarned,
+                        CompletionPercentage = quest.TotalPoints == 0
+                            ? 0
+                            : (int)((double)pointsEarned / quest.TotalPoints * 100),
+                        IsCompleted = pointsEarned >= quest.TotalPoints,
+                        Badge = pointsEarned >= quest.TotalPoints
+                            ? quest.Badge
+                            : Data.Enums.Badge.NoBadge,
+                        QuestTasks = taskResponses,
+                        IsActive = quest.IsActive
+                    };
+                })
+                .ToList();
 
             return new UserPointResponse
             {
@@ -242,7 +249,9 @@ public partial class UserQuestManagerService(
         catch (Exception ex) when (ex is not ApiServiceException)
         {
             ex.PrintInConsole(tag: nameof(GetUsersQuestPointAsync));
-            throw new ApiServiceException(UserQuestManagerMessages.SystemCouldNotGetUserQuest, ex);
+            throw new ApiServiceException(
+                UserQuestManagerMessages.SystemCouldNotGetUserQuest,
+                ex);
         }
     }
 

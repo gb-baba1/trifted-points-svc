@@ -13,6 +13,16 @@
         "CodeUri": ".",
         "MemorySize": 1024,
         "Timeout": 30,
+        "Architectures": [
+          "arm64"
+        ],
+        "Environment": {
+          "Variables": {
+            "ASPNETCORE_ENVIRONMENT": "Production",
+            "ASPNETCORE_LAMBDA_ENVIRONMENT": "Staging",
+            "SECRET_PARAMETER_PATHNAME": "/trifted/staging"
+          }
+        },
         "Policies": [
           "AWSLambda_FullAccess",
           "arn:aws:iam::147997163791:policy/get_trifted_params",
@@ -32,6 +42,16 @@
         "CodeUri": ".",
         "MemorySize": 1024,
         "Timeout": 30,
+        "Architectures": [
+          "arm64"
+        ],
+        "Environment": {
+          "Variables": {
+            "ASPNETCORE_ENVIRONMENT": "Production",
+            "ASPNETCORE_LAMBDA_ENVIRONMENT": "Staging",
+            "SECRET_PARAMETER_PATHNAME": "/trifted/staging"
+          }
+        },
         "Policies": [
           "AWSLambda_FullAccess",
           "arn:aws:iam::147997163791:policy/get_trifted_params",

@@ -15,6 +15,8 @@ using Trifted.Points.Business.Services.QuestEventSubscription;
 using Trifted.Points.Business.Services.QuestEventSubscription.Abstractions.Interfaces;
 using Trifted.Points.Business.Services.UserQuest;
 using Trifted.Points.Business.Services.UserQuest.Abstractions.Interfaces;
+using Trifted.Points.Business.Services.UserStreak;
+using Trifted.Points.Business.Services.UserStreak.Abstractions.Interfaces;
 using Trifted.Points.Business.Services.WdrbeQuest;
 using Trifted.Points.Business.Services.WdrbeQuest.Abstractions.Interfaces;
 using Trifted.Points.Common.Constants;
@@ -172,6 +174,7 @@ public partial class Functions : CloudFunction
         #endregion
         services.AddScoped<IUserQuestManagerService, UserQuestManagerService>();
         services.AddScoped<IWdrbeQuestManagerService, WdrbeQuestManagerService>();
+        services.AddScoped<IUserStreakManagerService, UserStreakManagerService>();
         services.AddScoped<IQuestEventSubscriptionManagerService, QuestEventSubscriptionManagerService>();
         services.AddScoped<WdrbeQuestRepository>();
         services.RegisterDynamoDbRepository();

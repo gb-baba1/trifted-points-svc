@@ -4,6 +4,7 @@ using Kanject.Core.Api.Abstractions.Exceptions;
 using Kanject.Core.Queue.Provider.AwsSqs.Annotations.Attributes;
 using System.Text.Json;
 using Trifted.Points.Business.Services.UserQuest.Abstractions.Interfaces;
+using Trifted.Points.Business.Services.UserStreak.Abstractions.Interfaces;
 using Trifted.Points.Data;
 using Trifted.Points.Data.Repositories;
 using static Trifted.Points.Data.Repositories.WdrbeQuestRepositoryItemCollectionType;
@@ -13,6 +14,7 @@ namespace Trifted.Points.Tasks.Consumers;
 [QueueConsumer]
 [QueueConsumerDependency(typeof(WdrbeQuestRepository))]
 [QueueConsumerDependency(typeof(IUserQuestManagerService))]
+[QueueConsumerDependency(typeof(IUserStreakManagerService))]
 public partial class WdrbeQuestConsumer
 {
     protected override async Task ConsumeAsync(List<Message> messages)
@@ -58,6 +60,8 @@ public partial class WdrbeQuestConsumer
                         messageContext.PrintInConsole(tag: nameof(ConsumeAsync));
                         throw new ApiValidationException("Unable to parse user identifier from message body");
                     }
+
+                    await UserStreakManagerService.ProcessUserStreakAsync(userId);
 
                     var response = await UserQuestManagerService.ProcessUserPointAsync(userId: userId,
                         questId: quest.QuestId, taskId: quest.Id);

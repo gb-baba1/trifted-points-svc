@@ -4,10 +4,8 @@ using Trifted.Points.Data.Entities.Users;
 
 namespace Trifted.Points.Data.Repositories;
 
-[Repository(Entity = typeof(UserProfileEntity), Version = 2)]
+[Repository(Entity = typeof(UserStreakEntity), Version = 2)]
 [DbContext(typeof(TriftedPointsDbContext))]
 [EntityRepository<UserPointEntity>]
-[EntityRepository<List<UserQuestEntity>>]
-[EntityRepository<List<UserQuestTaskEntity>>]
-[EntityRepository<List<UserStreakEntity>>]
-public partial class UserRepository;
+public partial class UserStreakRepository;
+

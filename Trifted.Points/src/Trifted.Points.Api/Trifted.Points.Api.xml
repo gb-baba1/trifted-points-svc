@@ -152,6 +152,28 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="T:Trifted.Points.Api.Controllers.User.UserStreaksController">
+            <summary>
+            Controller for managing a users's streaks.
+            </summary>
+            <remarks>
+            The <c>UserStreaksController</c> provides endpoints to interact with the user's streaks.
+            </remarks>
+        </member>
+        <member name="M:Trifted.Points.Api.Controllers.User.UserStreaksController.#ctor(Trifted.Points.Business.Services.UserStreak.Abstractions.Interfaces.IUserStreakManagerService)">
+            <summary>
+            Controller for managing a users's streaks.
+            </summary>
+            <remarks>
+            The <c>UserStreaksController</c> provides endpoints to interact with the user's streaks.
+            </remarks>
+        </member>
+        <member name="M:Trifted.Points.Api.Controllers.User.UserStreaksController.GetUsersQuestPointAsync">
+            <summary>
+            Get streak of a user
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:Trifted.Points.Api.LambdaEntryPoint">
             <summary>
                 This class extends from APIGatewayProxyFunction which contains the method FunctionHandlerAsync which is the

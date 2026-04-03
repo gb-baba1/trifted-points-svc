@@ -6,6 +6,6 @@ namespace Trifted.Points.Business.Services.UserQuest.Abstractions.Dtos
     {
         public int PointsEarned { get; set; }
         public Badge Badge { get; set; }
-        public List<UserQuestResponse> Quests { get; set; } = new();
+        public List<UserQuestResponse> Quests { get; set; } = [];
     }
 }
